@@ -9,6 +9,7 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
+using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot.Service
 {
@@ -36,6 +37,7 @@ namespace WpfElmaBot.Service
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
            new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
+           
         }
 
         public static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
