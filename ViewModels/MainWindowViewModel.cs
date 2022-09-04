@@ -10,10 +10,11 @@ namespace WpfElmaBot_2._0_.ViewModels
     internal class MainWindowViewModel : ViewModel
     {
         #region заголовок окна
-        /// <summary>
-        /// Заголовок
-        /// </summary>
+        
         private string _Tittle="Its a tittle";
+        /// <summary>
+        /// свойство заголовка
+        /// </summary>
         public string Tittle
         {
             get => _Tittle;

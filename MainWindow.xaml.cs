@@ -27,5 +27,39 @@ namespace WpfElmaBot_2._0_
 
             new TelegramCore().Start();
         }
+
+        private void MainWind_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                this.DragMove();
+            }
+        }
+
+        private void MainBtn_Click(object sender, RoutedEventArgs e)
+        {
+            MainBtn.IsDefault = true;
+            SettingBtn.IsDefault = false;
+            ErrorBtn.IsDefault = false;
+        }
+
+        private void SettingBtn_Click(object sender, RoutedEventArgs e)
+        {
+            MainBtn.IsDefault = false;
+            SettingBtn.IsDefault = true;
+            ErrorBtn.IsDefault = false;
+        }
+
+        private void ErrorBtn_Click(object sender, RoutedEventArgs e)
+        {
+            MainBtn.IsDefault = false;
+            SettingBtn.IsDefault = false;
+            ErrorBtn.IsDefault = true;
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
+        }
     }
 }

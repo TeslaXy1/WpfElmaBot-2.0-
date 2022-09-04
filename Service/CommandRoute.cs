@@ -12,8 +12,7 @@ namespace WpfElmaBot.Service
     public class CommandRoute
     {
         #region кнопки
-        public const string AUTH = "Авторизация";
-        public const string MAIN_MENU = "🏠 Главное меню";
+        public const string AUTH = "/authorization";
         public const string MENU = "/menu";
         public const string START = "/start";
 
@@ -53,7 +52,7 @@ namespace WpfElmaBot.Service
             var userId = update.GetChatId();
             if (botClient.HasStep(userId))
             {
-                if (command == MAIN_MENU || command == MENU || command == START)
+                if (command == MENU || command == START)
                 {
                     botClient.ClearStepUser(userId);
                     

@@ -6,15 +6,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using WpfElmaBot.Models;
 
 namespace WpfElmaBot.Service.Commands
 {
     public class Common
     {
         private CommandRoute route;
+       
         public Common(CommandRoute route)
         {
+            
             this.route = route;
+            
         }
         public async Task GetMyId(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
@@ -63,12 +67,15 @@ namespace WpfElmaBot.Service.Commands
                 KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
                 string login= loginpas.Value.Login;
                 string pasw = loginpas.Value.Password;
-               
-                //await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Пароль", cancellationToken);
+                string path = $"Authorization/LoginWith?username={login}";
+                var authorization =  await new ELMA().PostRequest<Auth>(path,pasw);
+
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken);
             }
             catch (Exception ex)
             {
-                //TODO Вывод exception
+
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken);
             }
         }
         public async Task Menu(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
