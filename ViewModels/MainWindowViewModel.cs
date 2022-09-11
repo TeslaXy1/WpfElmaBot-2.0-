@@ -7,7 +7,7 @@ using WpfElmaBot_2._0_.ViewModels.Base;
 
 namespace WpfElmaBot_2._0_.ViewModels
 {
-    internal class MainWindowViewModel : ViewModel
+    public class MainWindowViewModel : ViewModel
     {
         #region Статус состояния
         

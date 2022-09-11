@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace WpfElmaBot_2._0_.ViewModels.Base
 {
-    internal abstract class ViewModel : INotifyPropertyChanged
+    public abstract class ViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

@@ -20,10 +20,11 @@ namespace WpfElmaBot_2._0_
 
             new TelegramCore().Start();
             ElmaMessages.Start();
+            new MainWindowViewModel().Status = "Бот запущен";
             //new MainWindowViewModel().Status =  $"{DateTime.UtcNow.ToString("g")}-Бот запущен";
-    
-            
-            
+
+
+
         }
 
         private void MainWind_MouseDown(object sender, MouseButtonEventArgs e)

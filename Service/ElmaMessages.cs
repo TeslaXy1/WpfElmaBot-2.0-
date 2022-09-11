@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using WpfElmaBot.Models;
 using WpfElmaBot.Service;
+using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot_2._0_.Service
 {
@@ -187,6 +188,7 @@ namespace WpfElmaBot_2._0_.Service
             //TODO разораться с телом запроса
             string boody = "[{IdUserElma:" + userelma + ",IdTelegram:" +idtelegram+",AuthToken:" +authtoken+",SessionToken:" +sessiontoken +",IdLastSms:" +idmessage+",AuthorizationUser:false,Login:" + login+ "}]";
             var entity = await new ELMA().PostRequest1<Entity>($"{ELMA.FullURL}Entity/Update/{ELMA.TypeUid}/{identity}", body, authSprav, sessionSprav);
+            new MainWindowViewModel().Status = "Бот запущен";
             //TODO пост запрос обновление статуса
         }
          
