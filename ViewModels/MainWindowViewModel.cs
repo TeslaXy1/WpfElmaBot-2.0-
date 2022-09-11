@@ -9,16 +9,28 @@ namespace WpfElmaBot_2._0_.ViewModels
 {
     internal class MainWindowViewModel : ViewModel
     {
-        #region заголовок окна
+        #region Статус состояния
         
-        private string _Tittle="Its a tittle";
+        private string _Status;
         /// <summary>
-        /// свойство заголовка
+        /// состояние программы
         /// </summary>
-        public string Tittle
+        public string Status
         {
-            get => _Tittle;
-            set=>Set(ref _Tittle, value);   
+            get => _Status;
+            set=>Set(ref _Status, value);   
+        }
+        #endregion
+
+        #region Консоль 
+        private string _Consol;
+        /// <summary>
+        /// свойство консоли
+        /// </summary>
+        public string Consol
+        {
+            get => _Consol;
+            set => Set(ref _Consol, value);
         }
         #endregion
     }

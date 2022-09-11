@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using WpfElmaBot.Models;
 
 namespace WpfElmaBot.Service.Commands
@@ -24,7 +25,17 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Ваш id {update.Message.Chat.Id}", cancellationToken);
+                //var entity = await new ELMA().GetEntity<Entity>("c5c12f67-3f57-45c2-aa70-02dfded87f77");
+                //var message = await new ELMA().GetUnreadMessage<MessegesOtvet>();
+                OptionTelegramMessage message = new OptionTelegramMessage();
+               
+                message.MenuInlineKeyboardMarkup = new[]
+                        {
+                            InlineKeyboardButton.WithCallbackData("Авторизация"),
+                            InlineKeyboardButton.WithCallbackData("Не авторизация"),
+
+                        };
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Ваш id {update.Message.Chat.Id}", cancellationToken, message);
             }
             catch (Exception ex)
             {
@@ -36,7 +47,9 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
+               
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken);
+                
                 botClient.RegisterNextStep(update.Message.Chat.Id, Login);
             }
             catch (Exception ex)
@@ -64,12 +77,10 @@ namespace WpfElmaBot.Service.Commands
             try
             {
                 botClient.GetCacheData(update.GetChatId()).Value.Password = update.Message.Text;
-                KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
-                string login= loginpas.Value.Login;
-                string pasw = loginpas.Value.Password;
-                string path = $"Authorization/LoginWith?username={login}";
-                var authorization =  await new ELMA().PostRequest<Auth>(path,pasw);
-
+                KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);            
+                string path = $"Authorization/LoginWith?username={loginpas.Value.Login}";
+                var authorization =  await new ELMA().PostRequest<Auth>(path, loginpas.Value.Password);
+                
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken);
             }
             catch (Exception ex)

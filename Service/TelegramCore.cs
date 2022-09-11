@@ -12,12 +12,14 @@ namespace WpfElmaBot.Service
 {
     public class TelegramCore
     {
-        public static ITelegramBotClient bot = new TelegramBotClient("5440355360:AAEHIY2L0IaRF-VWPSkyhMvNrOqSjsEwm1s");      
-        private static CancellationTokenSource _cancelTokenSource;
+        public static ITelegramBotClient bot = new TelegramBotClient("5440355360:AAEHIY2L0IaRF-VWPSkyhMvNrOqSjsEwm1s");
+        public static CancellationToken cancellation;
+        //public static CancellationTokenSource _cancelTokenSource;
         public void Start()
         {
             var cts = new CancellationTokenSource();
             var cancellationToken = cts.Token;
+            cancellation = cts.Token;
             var receiverOptions = new ReceiverOptions
             {
                 AllowedUpdates = { }, // receive all update types
@@ -28,13 +30,21 @@ namespace WpfElmaBot.Service
                 receiverOptions,
                 cancellationToken
             );          
-            _cancelTokenSource = new CancellationTokenSource();
+            //_cancelTokenSource = new CancellationTokenSource();
         }
                
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-           new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
-           
+            try
+            {
+                new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
+
+            }
+            catch (Exception exeption) 
+            { 
+                //TODO обработка ошибок
+            }
+
         }
 
         public static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -45,8 +55,7 @@ namespace WpfElmaBot.Service
                     => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
                 _ => exception.ToString()
             };
-            //await botClient.SendTextMessageAsync(chatId: 804483111, text: Newtonsoft.Json.JsonConvert.SerializeObject(exception));
-            //SettingApp.Log.Error(JsonConvert.SerializeObject(exception) + " Функция Бота");
+            
 
         }
     }

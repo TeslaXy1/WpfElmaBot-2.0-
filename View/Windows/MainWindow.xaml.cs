@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using WpfElmaBot.Service;
+using WpfElmaBot_2._0_.Service;
+using WpfElmaBot_2._0_.View.Windows;
+using WpfElmaBot_2._0_.ViewModels;
+using WpfElmaBot_2._0_.ViewModels.Base;
 
 namespace WpfElmaBot_2._0_
 {
@@ -26,6 +19,11 @@ namespace WpfElmaBot_2._0_
             InitializeComponent();
 
             new TelegramCore().Start();
+            ElmaMessages.Start();
+            //new MainWindowViewModel().Status =  $"{DateTime.UtcNow.ToString("g")}-Бот запущен";
+    
+            
+            
         }
 
         private void MainWind_MouseDown(object sender, MouseButtonEventArgs e)
@@ -41,6 +39,8 @@ namespace WpfElmaBot_2._0_
             MainBtn.IsDefault = true;
             SettingBtn.IsDefault = false;
             ErrorBtn.IsDefault = false;
+
+            
         }
 
         private void SettingBtn_Click(object sender, RoutedEventArgs e)
@@ -48,6 +48,8 @@ namespace WpfElmaBot_2._0_
             MainBtn.IsDefault = false;
             SettingBtn.IsDefault = true;
             ErrorBtn.IsDefault = false;
+            new SettingPage().ShowDialog();
+           
         }
 
         private void ErrorBtn_Click(object sender, RoutedEventArgs e)

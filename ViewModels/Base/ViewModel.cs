@@ -8,7 +8,6 @@ namespace WpfElmaBot_2._0_.ViewModels.Base
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-
         public virtual void OnPropertyChanged([CallerMemberName] string PropertyName=null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
