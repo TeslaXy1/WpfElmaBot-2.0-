@@ -30,21 +30,21 @@
                         <TextBlock Text="Elma Bot" HorizontalAlignment="Center" FontSize="28" FontWeight="Bold"/>
                     </StackPanel>
                     <StackPanel>
-                        <Button  Width="150" Margin="0 10 0 0" Style="{StaticResource MenuButton}" Cursor="Hand"   x:Name="MainBtn" Click="MainBtn_Click">
+                        <Button  Width="150" Margin="0 10 0 0" Style="{StaticResource MenuButton}" Command="{Binding MainBtnCommand}" Cursor="Hand" IsDefault="{Binding IsDefaultMain}"  x:Name="MainBtn" >
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center"  HorizontalAlignment="Left" Margin="-60 0 0 0">
                                 <materialDesign:PackIcon Kind="Home" VerticalAlignment="Center" Margin="0 0 5 0"/>
                                 <TextBlock Text="Главная" FontSize="16"/>
                             </StackPanel>
                         </Button>
 
-                        <Button  Width="150" Margin="0 10 0 0" Style="{StaticResource MenuButton}" Cursor="Hand"  x:Name="SettingBtn" Click="SettingBtn_Click" >
+                        <Button  Width="150" Margin="0 10 0 0" Style="{StaticResource MenuButton}" Cursor="Hand"  x:Name="SettingBtn" IsDefault="{Binding IsDefaultSetting}" Command="{Binding SettingBtnCommand}"  >
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center"  HorizontalAlignment="Left">
                                 <materialDesign:PackIcon Kind="Settings" VerticalAlignment="Center" Margin="0 0 5 0"/>
                                 <TextBlock Text="Настройки бота" FontSize="16"/>
                             </StackPanel>
                         </Button>
 
-                        <Button IsEnabled="True" Width="150" Margin="0 10 0 0" Style="{StaticResource MenuButton}" Cursor="Hand"  x:Name="ErrorBtn" Click="ErrorBtn_Click" HorizontalAlignment="Left" >
+                        <Button IsEnabled="True" Width="150" Margin="0 10 0 0" Style="{StaticResource MenuButton}" Cursor="Hand"  x:Name="ErrorBtn" IsDefault="{Binding IsDefaultError}" Command="{Binding ErrorBtnCommand}"  HorizontalAlignment="Left" >
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="-30 0 0 0" >
                                 <materialDesign:PackIcon Kind="Error" VerticalAlignment="Center" Margin="0 0 5 0" />
                                 <TextBlock Text="Неполадки" FontSize="16"/>
@@ -54,7 +54,7 @@
 
 
                     <StackPanel VerticalAlignment="Bottom" Margin="0 190 0 0">
-                        <Button Width="150" Margin="0 10 0 0" Style="{StaticResource MenuButton}" Cursor="Hand"  HorizontalAlignment="Left" VerticalAlignment="Bottom" x:Name="Exit" Click="Exit_Click" >
+                        <Button Width="150" Margin="0 10 0 0" Style="{StaticResource MenuButton}" Cursor="Hand"  HorizontalAlignment="Left" VerticalAlignment="Bottom" x:Name="Exit" Command="{Binding CloseAppCommand}" >
                             <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="-65 0 0 0" >
                                 <materialDesign:PackIcon Kind="ExitToApp" VerticalAlignment="Center" Margin="0 0 5 0" />
                                 <TextBlock Text="Выход" FontSize="16"/>

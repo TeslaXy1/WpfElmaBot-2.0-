@@ -14,16 +14,14 @@ namespace WpfElmaBot_2._0_
     /// </summary>
     public partial class MainWindow : Window
     {
+        
         public MainWindow()
         {
             InitializeComponent();
 
             new TelegramCore().Start();
             ElmaMessages.Start();
-            new MainWindowViewModel().Status = "Бот запущен";
-            //new MainWindowViewModel().Status =  $"{DateTime.UtcNow.ToString("g")}-Бот запущен";
-
-
+            
 
         }
 
@@ -34,35 +32,6 @@ namespace WpfElmaBot_2._0_
                 this.DragMove();
             }
         }
-
-        private void MainBtn_Click(object sender, RoutedEventArgs e)
-        {
-            MainBtn.IsDefault = true;
-            SettingBtn.IsDefault = false;
-            ErrorBtn.IsDefault = false;
-
             
-        }
-
-        private void SettingBtn_Click(object sender, RoutedEventArgs e)
-        {
-            MainBtn.IsDefault = false;
-            SettingBtn.IsDefault = true;
-            ErrorBtn.IsDefault = false;
-            new SettingPage().ShowDialog();
-           
-        }
-
-        private void ErrorBtn_Click(object sender, RoutedEventArgs e)
-        {
-            MainBtn.IsDefault = false;
-            SettingBtn.IsDefault = false;
-            ErrorBtn.IsDefault = true;
-        }
-
-        private void Exit_Click(object sender, RoutedEventArgs e)
-        {
-            Environment.Exit(0);
-        }
     }
 }

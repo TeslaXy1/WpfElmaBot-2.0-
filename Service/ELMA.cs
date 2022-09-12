@@ -51,23 +51,31 @@ namespace WpfElmaBot.Service
 
         public async Task<T> PostRequest<T>(string path, string body, string authToken = null, string sessionToken = null)
         {
-            var request = new RestRequest($"{FullURL}" + path);         
-            AddHeadersELMA(request,authToken,sessionToken);
-            request.AddStringBody(body, DataFormat.Json);         
-            var test = RestClient.BuildUri(request);
-            var response = await RestClient.PostAsync(request);
-            return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
-        }
-
-        public async Task<T> PostRequest1<T>(string path, Entity body, string authToken = null, string sessionToken = null)
-        {
+            try
+            {
                 var request = new RestRequest($"{FullURL}" + path);
                 AddHeadersELMA(request, authToken, sessionToken);
-                request.AddBody(body, "application/json");
+                request.AddStringBody(body, DataFormat.Json);
                 var test = RestClient.BuildUri(request);
                 var response = await RestClient.PostAsync(request);
-                return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));        
+                return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
+            }
+            catch
+            {
+                var request = new RestRequest($"{FullURL}" + path);
+                AddHeadersELMA(request, authToken, sessionToken);
+                request.AddStringBody(body, DataFormat.Json);
+                var test = RestClient.BuildUri(request);
+                var response = await RestClient.PostAsync(request);
+                return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
+            }
+            
         }
+
+        //public async Task<T> UodateEntity<T>(string path, T obj, string authToken = null, string sessionToken = null) where T: Entity
+        //{
+        //    string data = JsonConvert.SerializeObject(obj, new JsonSerializerSettings { ContractResolver= new JsonPropertyResolver()});
+        //}
 
         public async Task<List<T>> GetEntity<T>(string typeUId, string authToken = null, string sessionToken = null) where T : Entity
         {

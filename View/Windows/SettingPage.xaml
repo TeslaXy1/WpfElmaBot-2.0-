@@ -5,16 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfElmaBot_2._0_.View.Windows"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:Icon ="http://metro.mahapps.com/winfx/xaml/iconpacks" 
+        xmlns:vm ="clr-namespace:WpfElmaBot_2._0_.ViewModels"
         mc:Ignorable="d"
-        Title="SettingPage"  Height="450" Width="650"   Background="Transparent" AllowsTransparency="True" HorizontalAlignment="Left" VerticalAlignment="Top" WindowStyle="None">
-    <Border CornerRadius="20 20 20 20" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Height="450" Width="650" >
+        Title="SettingPage"  Height="460" Width="425"   Background="Transparent" AllowsTransparency="True" HorizontalAlignment="Left" VerticalAlignment="Top" WindowStyle="None" WindowStartupLocation="CenterScreen">
+    <Window.DataContext>
+        <vm:SettingPageViewModel/>
+    </Window.DataContext>
+    <Border CornerRadius="20 20 20 20" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Height="460" Width="425" >
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="500"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            
             <Grid.RowDefinitions>
-                <RowDefinition Height="10"/>
+                <RowDefinition Height="30"/>
                 <RowDefinition Height="60"/>
                 <RowDefinition Height="60"/>
                 <RowDefinition Height="60"/>
@@ -24,13 +26,13 @@
                 <RowDefinition Height="45"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-
-            <TextBox Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Токен Elma" BorderThickness="2" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
-            <TextBox Grid.Column="0" Grid.Row="2" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Токен бота" BorderThickness="2" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
-            <TextBox Grid.Column="0" Grid.Row="3" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Адрес" BorderThickness="2" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
-            <TextBox Grid.Column="0" Grid.Row="4" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Порт" BorderThickness="2" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
-            <TextBox Grid.Column="0" Grid.Row="5" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Справочник" BorderThickness="2" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
-            <StackPanel Grid.Row="6" Grid.Column="0" VerticalAlignment="Center"  HorizontalAlignment="Left" Width="500" >
+            <materialDesign:PackIcon Kind="Backspace" VerticalAlignment="Center"  Margin="10 0 0 0" Cursor="Hand" />
+            <TextBox  Grid.Row="1" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Токен Elma" BorderThickness="2" Text="{Binding TokenElma}" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
+            <TextBox  Grid.Row="2" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Токен бота" BorderThickness="2" Text="{Binding TokenBot}" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
+            <TextBox  Grid.Row="3" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Адрес" BorderThickness="2"      Text="{Binding Adress}" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
+            <TextBox  Grid.Row="4" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Порт" BorderThickness="2"       Text="{Binding Port}" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
+            <TextBox  Grid.Row="5" HorizontalAlignment="Left" Margin="10 0 0 0"  Width="400" Height="50" FontSize="12" materialDesign:HintAssist.Hint="Справочник" BorderThickness="2" Text="{Binding TypeUid}" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
+            <StackPanel Grid.Row="6"  VerticalAlignment="Center"  HorizontalAlignment="Left" Width="500" >
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="210"/>
@@ -38,8 +40,8 @@
                         <ColumnDefinition Width="88"/>
                         <ColumnDefinition Width="0*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox HorizontalAlignment="Center"   x:Name="txtUsername" Height="50" Width="190" FontSize="12" materialDesign:HintAssist.Hint="Логин" BorderThickness="2" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
-                    <PasswordBox  HorizontalAlignment="Center" Height="50" Width="200" Grid.Column="1" x:Name="txtPassword" FontSize="12" materialDesign:HintAssist.Hint="Пароль" BorderThickness="2" BorderBrush="{DynamicResource MaterialDesignDivider}" Style="{StaticResource MaterialDesignOutlinedPasswordBox}"/>
+                    <TextBox HorizontalAlignment="Center"   x:Name="txtUsername" Height="50" Width="190" FontSize="12" materialDesign:HintAssist.Hint="Логин" BorderThickness="2" Text="{Binding Login}" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
+                    <PasswordBox  HorizontalAlignment="Center" Height="50" Width="200" Grid.Column="1" x:Name="txtPassword" FontSize="12" materialDesign:HintAssist.Hint="Пароль"  BorderThickness="2" BorderBrush="{DynamicResource MaterialDesignDivider}" Style="{StaticResource MaterialDesignOutlinedPasswordBox}"/>
                     <Button x:Name="SpravocnikBtn" Grid.Column="2" Height="Auto"  Width="Auto"  Content="Сохранить" Style="{StaticResource MenuButton}"  Visibility="Hidden" Cursor="Hand" Margin="12,3,9,4"    />
                 </Grid>
             </StackPanel>

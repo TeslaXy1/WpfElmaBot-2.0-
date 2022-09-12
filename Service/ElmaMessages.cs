@@ -43,7 +43,10 @@ namespace WpfElmaBot_2._0_.Service
         {
             Stop();
             _cancelTokenSource = new CancellationTokenSource();
-            _ = MainCycle(_cancelTokenSource.Token);         
+            _ = MainCycle(_cancelTokenSource.Token);
+
+            new MainWindowViewModel().Status = "Бот запущен";
+
         }
         public bool IsWorking => _cancelTokenSource != null;
 
@@ -169,26 +172,26 @@ namespace WpfElmaBot_2._0_.Service
         
         public static async Task UpdateStatus(string userelma, long idtelegram, string authtoken, string sessiontoken,string login , int idmessage, int identity)
         {
-            var body = new Entity()
+            try
             {
-                IdUserElma = userelma,
-                IdTelegram = Convert.ToString(idtelegram),
-                AuthToken = authtoken,
-                SessionToken = sessiontoken,
-                AuthorizationUser = "false",
-                Login = login,
-                IdLastSms = Convert.ToString(idmessage)
-                //TypeUid = "c5c12f67-3f57-45c2-aa70-02dfded87f77",
-                //Id = Convert.ToString(70),
-                //Uid = "9584321b-dbdf-469b-bde2-a022c868fecb"
-
-
-            };
-            string ss = Convert.ToString(body);
-            //TODO разораться с телом запроса
-            string boody = "[{IdUserElma:" + userelma + ",IdTelegram:" +idtelegram+",AuthToken:" +authtoken+",SessionToken:" +sessiontoken +",IdLastSms:" +idmessage+",AuthorizationUser:false,Login:" + login+ "}]";
-            var entity = await new ELMA().PostRequest1<Entity>($"{ELMA.FullURL}Entity/Update/{ELMA.TypeUid}/{identity}", body, authSprav, sessionSprav);
-            new MainWindowViewModel().Status = "Бот запущен";
+                var body = new Entity()
+                {
+                    IdUserElma = userelma,
+                    IdTelegram = Convert.ToString(idtelegram),
+                    AuthToken = authtoken,
+                    SessionToken = sessiontoken,
+                    AuthorizationUser = "false",
+                    Login = login,
+                    IdLastSms = Convert.ToString(idmessage)
+                };
+                string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
+                var entity = await new ELMA().PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{identity}", jsonBody, authSprav, sessionSprav);
+            }
+            catch(Exception ex)
+            {
+                //TODO обработать исключение
+            }
+                    
             //TODO пост запрос обновление статуса
         }
          

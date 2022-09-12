@@ -14,6 +14,7 @@ namespace WpfElmaBot.Service.Commands
     public class Common
     {
         private CommandRoute route;
+        private ELMA elma = new ELMA();
        
         public Common(CommandRoute route)
         {
@@ -79,8 +80,12 @@ namespace WpfElmaBot.Service.Commands
                 botClient.GetCacheData(update.GetChatId()).Value.Password = update.Message.Text;
                 KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);            
                 string path = $"Authorization/LoginWith?username={loginpas.Value.Login}";
-                var authorization =  await new ELMA().PostRequest<Auth>(path, loginpas.Value.Password);
-                
+                var authorization =  await elma.PostRequest<Auth>(path, loginpas.Value.Password);
+                var message = await elma.GetUnreadMessage<MessegesOtvet>(authorization.AuthToken, authorization.SessionToken);
+
+                //TODO проверка наличия пользователя в справочнике
+
+
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken);
             }
             catch (Exception ex)
