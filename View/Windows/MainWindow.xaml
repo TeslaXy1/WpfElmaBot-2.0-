@@ -75,8 +75,8 @@
             <StackPanel Grid.Row="1" Grid.Column="1" Margin="10 0 0 0">
                 <TextBlock  x:Name="statusTxt"   VerticalAlignment="Top" HorizontalAlignment="Left" Width="630"  Height="50"  Text="{Binding Status}" />
             </StackPanel>
-           
-            
+
+
 
 
 

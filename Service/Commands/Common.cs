@@ -26,14 +26,10 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
-                //var entity = await new ELMA().GetEntity<Entity>("c5c12f67-3f57-45c2-aa70-02dfded87f77");
-                //var message = await new ELMA().GetUnreadMessage<MessegesOtvet>();
                 OptionTelegramMessage message = new OptionTelegramMessage();
-               
                 message.MenuInlineKeyboardMarkup = new[]
                         {
-                            InlineKeyboardButton.WithCallbackData("Авторизация"),
-                            InlineKeyboardButton.WithCallbackData("Не авторизация"),
+                            InlineKeyboardButton.WithCallbackData("Авторизация")
 
                         };
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Ваш id {update.Message.Chat.Id}", cancellationToken, message);
@@ -49,8 +45,7 @@ namespace WpfElmaBot.Service.Commands
             try
             {
                
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken);
-                
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken);               
                 botClient.RegisterNextStep(update.Message.Chat.Id, Login);
             }
             catch (Exception ex)
@@ -81,7 +76,11 @@ namespace WpfElmaBot.Service.Commands
                 KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);            
                 string path = $"Authorization/LoginWith?username={loginpas.Value.Login}";
                 var authorization =  await elma.PostRequest<Auth>(path, loginpas.Value.Password);
-                var message = await elma.GetUnreadMessage<MessegesOtvet>(authorization.AuthToken, authorization.SessionToken);
+                elma.AuthorizationUser(authorization, Convert.ToInt64(update.Message.Chat.Id),loginpas.Value.Login);
+
+
+                botClient.GetCacheData(update.GetChatId()).Value.AuthToken = authorization.AuthToken;
+                botClient.GetCacheData(update.GetChatId()).Value.SessionToken = authorization.SessionToken;
 
                 //TODO проверка наличия пользователя в справочнике
 

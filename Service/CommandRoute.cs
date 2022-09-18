@@ -13,6 +13,7 @@ namespace WpfElmaBot.Service
     {
         #region кнопки
         public const string AUTH = "/authorization";
+        public const string AUTHInline = "Авторизация";
         public const string MENU = "/menu";
         public const string START = "/start";
 
@@ -41,6 +42,7 @@ namespace WpfElmaBot.Service
             _commands.Add(START, CommonCommand.GetMyId);
             _commands.Add(AUTH, CommonCommand.Auth);
             _commands.Add(MENU, CommonCommand.Menu);
+            _commands.Add(AUTHInline, CommonCommand.Auth);
         }
 
         /// <summary>
@@ -49,32 +51,36 @@ namespace WpfElmaBot.Service
         /// <param name="command">Запрос команды</param>
         public async Task ExecuteCommand(string command, ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            var userId = update.GetChatId();
-            if (botClient.HasStep(userId))
+            try
             {
-                if (command == MENU || command == START)
+                var userId = update.GetChatId();
+                if (botClient.HasStep(userId))
                 {
-                    botClient.ClearStepUser(userId);
-                    
+                    if (command == MENU || command == START)
+                    {
+                        botClient.ClearStepUser(userId);
+
+                        return;
+                    }
+                    await botClient.GetStepOrNull(userId).Value(botClient, update, cancellationToken);
                     return;
                 }
-                await botClient.GetStepOrNull(userId).Value(botClient, update, cancellationToken);
-                return;
-            }
 
 
-            foreach (var item in _commands)
-            {
-                if (item.Key.ToLower() == command.ToLower())
+                foreach (var item in _commands)
                 {
-                    //Выполнение команды
-                    await item.Value(botClient, update, cancellationToken);
-               
-                    return;
+                    if (item.Key.ToLower() == command.ToLower())
+                    {
+                        //Выполнение команды
+                        await item.Value(botClient, update, cancellationToken);
+
+                        return;
+                    }
                 }
+                //Сообщение что команда не найдена
+                await CommandMissing(botClient, update, cancellationToken);
             }
-            //Сообщение что команда не найдена
-            await CommandMissing(botClient, update, cancellationToken);
+            catch { }
         }
 
         /// <summary>

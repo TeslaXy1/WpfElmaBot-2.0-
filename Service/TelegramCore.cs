@@ -37,7 +37,15 @@ namespace WpfElmaBot.Service
         {
             try
             {
-                new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
+                if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
+                {
+                    new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
+                }
+                if(update.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
+                {
+                    var query = update.CallbackQuery.Data;
+                    new CommandRoute().ExecuteCommand(query, botClient, update, cancellationToken);
+                }
 
             }
             catch (Exception exeption) 

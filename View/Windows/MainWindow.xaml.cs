@@ -14,16 +14,19 @@ namespace WpfElmaBot_2._0_
     /// </summary>
     public partial class MainWindow : Window
     {
-        
+     
+
         public MainWindow()
         {
             InitializeComponent();
 
             new TelegramCore().Start();
             ElmaMessages.Start();
-            
+            //MainWindowViewModel.getInstance().Status = "бот запущен";
+
 
         }
+
 
         private void MainWind_MouseDown(object sender, MouseButtonEventArgs e)
         {

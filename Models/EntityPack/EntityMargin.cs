@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WpfElmaBot.Models;
 
-namespace WpfElmaBot.Models
+namespace WpfElmaBot_2._0_.Models.EntityPack
 {
-    public class Entity
+    public class EntityMargin: Entity
     {
-        public string Id { get; set; }
-        public string TypeUid { get; set; }
-        public string Uid { get; set; }
         public string IdTelegram { get; set; }
         public string IdUserElma { get; set; }
         public string AuthToken { get; set; }

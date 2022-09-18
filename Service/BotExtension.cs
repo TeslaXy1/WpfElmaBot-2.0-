@@ -100,5 +100,8 @@ namespace WpfElmaBot.Service
     {
         public string Login { get; set; }
         public string Password { get; set; }
+        
+        public string AuthToken { get; set; }
+        public string SessionToken { get; set; }
     }
 }

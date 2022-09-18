@@ -8,7 +8,15 @@ namespace WpfElmaBot_2._0_.ViewModels
 {
     public class MainWindowViewModel : ViewModel
     {
-       
+
+        private static MainWindowViewModel instance;
+        public static MainWindowViewModel getInstance()
+        {
+            if (instance == null)
+                instance = new MainWindowViewModel();
+            return instance;
+        }
+
         #region Свойства
 
         #region Статус состояния
@@ -94,7 +102,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             IsDefaultMain = false;
             IsDefaultSetting = true;
             IsDefaultError = false;
-            new SettingPage().ShowDialog();
+            SettingPageViewModel.getInstance().ShowDialog();
         }
         private bool CanSettingBtnCommandExecute(object p) => true;
         #endregion
@@ -130,6 +138,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             ErrorBtnCommand = new LambdaCommand(OnErrorBtnCommandExecuted, CanErrorBtnCommandExecute);
             CloseAppCommand = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
             #endregion
+
         }
     }
 }
