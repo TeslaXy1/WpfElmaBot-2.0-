@@ -26,25 +26,28 @@ namespace WpfElmaBot_2._0_.Service
         public static string loginUser;
         public static int entityId;
 
-       
+        
+
+        public MainWindowViewModel mwvm;
+        public ElmaMessages(MainWindowViewModel mwvm)
+        {
+            this.mwvm = mwvm;
+        }
 
         private static CommandRoute route = new CommandRoute();
-
         private static CancellationTokenSource _cancelTokenSource;
         private const int TimerIntervalInSeconds = 10;
 
-        public static void Start()
+        public  void Start()
         {
             Stop();
             _cancelTokenSource = new CancellationTokenSource();
             _ = MainCycle(_cancelTokenSource.Token);
 
-            //new MainWindowViewModel("Бот запущен");
-
         }
         public bool IsWorking => _cancelTokenSource != null;
 
-        async static Task MainCycle(CancellationToken token)
+        async  Task MainCycle(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
@@ -55,7 +58,7 @@ namespace WpfElmaBot_2._0_.Service
                 }
                 catch (Exception exception)
                 {
-                    
+                    MainWindow.Log.Error("Ошибка цикла получения смс | " + exception);
 
                 }
 
@@ -66,7 +69,7 @@ namespace WpfElmaBot_2._0_.Service
             _cancelTokenSource?.Cancel();
             _cancelTokenSource = null;
         }
-        public static async Task ProcessingMessages()
+        public  async Task ProcessingMessages()
         {
             try
             { 
@@ -81,20 +84,23 @@ namespace WpfElmaBot_2._0_.Service
                 catch(Exception exeption)
                 {
                     Stop();
-                    MessageBox.Show("Неверный логин или пароль");
-                    //TODO обработка ошибок
+                    MessageBox.Show("Неверный логин или пароль");                  
+                    MainWindow.Log.Error("Ошибка авторизации спарвочника | "+exeption);
+                    mwvm.Error += "Неверный логин или пароль" + "\n";
+
                 }
                 var entity = await ELMA.getInstance().GetEntity<EntityMargin>($"Entity/Query?type={ELMA.TypeUid}", authSprav,sessionSprav);
                 for (int i = 0; i < entity.Count; i++)
                 {
-                    userElma = entity[i].IdUserElma;//id user elma
-                    idTelegram = Convert.ToInt64(entity[i].IdTelegram);//id user telegram
-                    authToken = entity[i].AuthToken;//authToken
-                    sessionToken = entity[i].SessionToken;//sessiaToken                   
-                    idMessage = Convert.ToInt32(entity[i].IdLastSms); //id last sms
-                    status = Convert.ToString(entity[i].AuthorizationUser); //Статус авторизации
-                    loginUser = entity[i].Login;
-                    entityId = Convert.ToInt32(entity[i].Id);// уникальный идентификатор записи в справочнике
+                   
+                    userElma        = entity[i].IdUserElma;//id user elma
+                    idTelegram      = Convert.ToInt64(entity[i].IdTelegram);//id user telegram
+                    authToken       = entity[i].AuthToken;//authToken
+                    sessionToken    = entity[i].SessionToken;//sessiaToken                   
+                    idMessage       = Convert.ToInt32(entity[i].IdLastSms); //id last sms
+                    status          = Convert.ToString(entity[i].AuthorizationUser); //Статус авторизации
+                    loginUser       = entity[i].Login;
+                    entityId        = Convert.ToInt32(entity[i].Id);// уникальный идентификатор записи в справочнике
                     try
                     {
                         var chekToken = await ELMA.getInstance().UpdateToken<Auth>(authToken);
@@ -105,8 +111,10 @@ namespace WpfElmaBot_2._0_.Service
                         }
                         catch (Exception exception)
                         {
+                            MainWindow.Log.Error($"Неудалось получить сообщения пользователя {loginUser} | " + exception);
+                             
                             //TODO обработчик ошибок
-                            i++;
+                            //i++;
                         }
 
 
@@ -114,10 +122,15 @@ namespace WpfElmaBot_2._0_.Service
                     catch (Exception exception)
                     {
                         //TODO обновление данных в справочнике (AuthorizationUser = false)
+                        mwvm.Error += exception + "\n";
                         await UpdateStatus(userElma, idTelegram, authToken, sessionToken, loginUser , idMessage, entityId);
-                        await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: "Вам нужно авторизоваться", TelegramCore.cancellation);
+                        if(status!="false")
+                        {
+                            await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: "Вам нужно авторизоваться", TelegramCore.cancellation);
+                        }
+                        
 
-                        i++;
+                        //i++;
                     }
                 }
                 
@@ -149,9 +162,11 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch(Exception ex)
             {
+                MainWindow.Log.Error("Ошибка обновления статуса в справочнике | " + ex);
+                
                 //TODO обработать исключение
             }
-                    
+
             //TODO пост запрос обновление статуса
         }
 
@@ -175,6 +190,7 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch (Exception ex)
             {
+                MainWindow.Log.Error("Ошибка обновения последнего сообщения в справочнике | " + ex);
                 //TODO обработать исключение
             }
             //TODO записать последнее сообщение
@@ -182,73 +198,38 @@ namespace WpfElmaBot_2._0_.Service
         }
         public static async Task GenerateMsg(MessegesOtvet message)
         {
-            int maxIdMes = message.Data.Select(x => x.Id).Max(); //последнее сообщение
-            if (message != null)
-            {
-                for (int j = message.Data.Count - 1; j > -1; j--)
+            try
+            { 
+                int maxIdMes = message.Data.Select(x => x.Id).Max(); //последнее сообщение
+                if (message != null)
                 {
-                    if (idMessage != message.Data[j].Id && idMessage < message.Data[j].Id)
+                    for (int j = message.Data.Count - 1; j > -1; j--)
                     {
-                        //var msg = GenerateMsg.GetMsg();
-
-                        //bool isTask = message.Data[j].ObjectGroupText == "Задача";
-                        //bool hasText = message.Data[j].Text != null;
-
-                        //string msg = (isTask ? "Новая задача📋" : "Новое сообщени");
-                        //msg += "\n ";
-                        //if (hasText)
-                        //{
-
-                        //}
-
-                        if (message.Data[j].ObjectGroupText == "Задача")
+                        if (idMessage != message.Data[j].Id && idMessage < message.Data[j].Id)
                         {
-                            try
-                            {
-                                if (message.Data[j].Text == null)
-                                {
 
-                                    await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: "Новая задача📋" + "\n" + "👨‍💻 " + message.Data[j].CreationAuthor.Name + "\n" + "📃 " + message.Data[j].Subject, TelegramCore.cancellation);
-                                }
-                                else
-                                {
-                                    await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: "Новая задача📋" + "\n" + "👨‍💻 " + message.Data[j].CreationAuthor.Name + "\n" + "📃 " + message.Data[j].Subject + "\n" + message.Data[j].Text, TelegramCore.cancellation);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                //TODO обработка ошибок
-                            }
+                            bool isTask = message.Data[j].ObjectGroupText == "Задача";
+                            bool hasText = message.Data[j].Text == null;
 
+                            string msg = (isTask ? "Новая задача📋" : "Новое сообщение📋");
+                            msg += "\n";
+                            msg += "👨‍💻 " + message.Data[j].CreationAuthor.Name;
+                            msg += "\n";
+                            msg += "📃 " + message.Data[j].Subject;
+                            msg += (hasText ? "" : "\n" + message.Data[j].Text);
+                            await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: msg, TelegramCore.cancellation);
                         }
-                        if (message.Data[j].ObjectGroupText == "Сообщение")
-                        {
-                            try
-                            {
 
-
-                                if (message.Data[j].Text == null)
-                                {
-
-                                    await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: "Новаое сообщение📋" + "\n" + "👨‍💻 " + message.Data[j].CreationAuthor.Name + "\n" + "📃 " + message.Data[j].Subject, TelegramCore.cancellation);
-                                }
-                                else
-                                {
-                                    await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: "Новое сообщение📋" + "\n" + "👨‍💻 " + message.Data[j].CreationAuthor.Name + "\n" + "📃 " + message.Data[j].Subject + "\n" + message.Data[j].Text, TelegramCore.cancellation);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                //TODO обработка ошибок
-                            }
-                        }
                     }
-
+                    await UpdateMessage(userElma, idTelegram, authToken, sessionToken, loginUser, maxIdMes, entityId);
                 }
-                await UpdateMessage(userElma, idTelegram, authToken, sessionToken, loginUser, maxIdMes, entityId);
+            }
+            catch
+            {
+                new MainWindowViewModel().Error = $"{DateTime.Now.ToString("g")} неверный логин или пароль для справочника";
             }
         }
-         
+       
        //TODO авторизация справочника
        //TODO получение записей 
        //TODO прогон всех записей

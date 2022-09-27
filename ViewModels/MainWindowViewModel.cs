@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Configuration;
 using System.Windows.Input;
+using WpfElmaBot.Service;
 using WpfElmaBot_2._0_.Infrastructure.Commands;
+using WpfElmaBot_2._0_.Service;
 using WpfElmaBot_2._0_.View.Windows;
 using WpfElmaBot_2._0_.ViewModels.Base;
 
@@ -9,11 +12,13 @@ namespace WpfElmaBot_2._0_.ViewModels
     public class MainWindowViewModel : ViewModel
     {
 
+        
         private static MainWindowViewModel instance;
         public static MainWindowViewModel getInstance()
         {
-            if (instance == null)
-                instance = new MainWindowViewModel();
+            
+                    if (instance == null)
+                        instance = new MainWindowViewModel();
             return instance;
         }
 
@@ -41,6 +46,42 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             get => _Consol;
             set => Set(ref _Consol, value);
+        }
+        #endregion
+
+        #region Видимость консоли
+        private string _visibleConsol;
+        /// <summary>
+        /// свойство консоли
+        /// </summary>
+        public string VisibleConsol
+        {
+            get => _visibleConsol;
+            set => Set(ref _visibleConsol, value);
+        }
+        #endregion
+
+        #region Консоль неполадок 
+        private string _error;
+        /// <summary>
+        /// свойство консоли
+        /// </summary>
+        public string Error
+        {
+            get => _error;
+            set => Set(ref _error, value);
+        }
+        #endregion
+
+        #region Видимость консоли ошибок
+        private string _visibleError = "Hidden";
+        /// <summary>
+        /// свойство консоли ошибок
+        /// </summary>
+        public string VisibleError
+        {
+            get => _visibleError;
+            set => Set(ref _visibleError, value);
         }
         #endregion
 
@@ -91,6 +132,9 @@ namespace WpfElmaBot_2._0_.ViewModels
             IsDefaultMain = true;
             IsDefaultSetting = false;
             IsDefaultError = false;
+            VisibleConsol = "Visible";
+            VisibleError = "Hidden";
+
         }
         private bool CanMainBtnCommandExecute(object p) => true;
         #endregion
@@ -100,7 +144,6 @@ namespace WpfElmaBot_2._0_.ViewModels
         private void OnSettingBtnCommandExecuted(object p)
         {
             IsDefaultMain = false;
-            IsDefaultSetting = true;
             IsDefaultError = false;
             SettingPageViewModel.getInstance().ShowDialog();
         }
@@ -114,6 +157,8 @@ namespace WpfElmaBot_2._0_.ViewModels
             IsDefaultMain = false;
             IsDefaultSetting = false;
             IsDefaultError = true;
+            VisibleConsol = "Hidden";
+            VisibleError = "Visible";
         }
         private bool CanErrorBtnCommandExecute(object p) => true;
         #endregion
@@ -131,14 +176,26 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         public MainWindowViewModel()
         {
-            
+           
             #region Команды
-            MainBtnCommand = new LambdaCommand(OnMainBtnCommandExecuted, CanMainBtnCommandExecute);
-            SettingBtnCommand = new LambdaCommand(OnSettingBtnCommandExecuted, CanSettingBtnCommandExecute);
-            ErrorBtnCommand = new LambdaCommand(OnErrorBtnCommandExecuted, CanErrorBtnCommandExecute);
-            CloseAppCommand = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
+            MainBtnCommand               = new LambdaCommand(OnMainBtnCommandExecuted, CanMainBtnCommandExecute);
+            SettingBtnCommand            = new LambdaCommand(OnSettingBtnCommandExecuted, CanSettingBtnCommandExecute);
+            ErrorBtnCommand              = new LambdaCommand(OnErrorBtnCommandExecuted, CanErrorBtnCommandExecute);
+            CloseAppCommand              = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
             #endregion
 
+
+            ELMA.appToken                = ConfigurationManager.AppSettings.Get("TokenElma");
+            ELMA.FullURL                 = ConfigurationManager.AppSettings.Get("FullURL"); ;
+            ELMA.FullURLpublic           = ConfigurationManager.AppSettings.Get("FullURLPublic");
+            ELMA.login                   = ConfigurationManager.AppSettings.Get("Login");
+            ELMA.password                = ConfigurationManager.AppSettings.Get("Password");
+            ELMA.TypeUid                 = ConfigurationManager.AppSettings.Get("TypeUid");
+            TelegramCore.TelegramToken   = ConfigurationManager.AppSettings.Get("TokenTelegram");
+
+            new TelegramCore(this).Start();
+            new  ElmaMessages(this).Start();
         }
+
     }
 }

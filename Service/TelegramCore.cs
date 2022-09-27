@@ -12,8 +12,20 @@ namespace WpfElmaBot.Service
 {
     public class TelegramCore
     {
-        public static ITelegramBotClient bot = new TelegramBotClient("5440355360:AAEHIY2L0IaRF-VWPSkyhMvNrOqSjsEwm1s");
+        public static string TelegramToken= "5440355360:AAEHIY2L0IaRF-VWPSkyhMvNrOqSjsEwm1s";
+        public static ITelegramBotClient bot = new TelegramBotClient(TelegramToken);
         public static CancellationToken cancellation;
+
+        private MainWindowViewModel vm;
+
+
+        public TelegramCore(MainWindowViewModel vm)
+        {
+            this.vm = vm;
+        }
+
+
+
         //public static CancellationTokenSource _cancelTokenSource;
         public void Start()
         {
@@ -29,7 +41,9 @@ namespace WpfElmaBot.Service
                 HandleErrorAsync,
                 receiverOptions,
                 cancellationToken
-            );          
+            );
+            ClearUpdates();
+            vm.Status = $"{DateTime.Now.ToString("g")}-Бот запущен";
             //_cancelTokenSource = new CancellationTokenSource();
         }
                
@@ -39,7 +53,9 @@ namespace WpfElmaBot.Service
             {
                 if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
                 {
+
                     new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
+                    vm.Consol += $"{DateTime.UtcNow.ToString("G")}: Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ") \n" + Environment.NewLine;
                 }
                 if(update.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
                 {
@@ -65,6 +81,15 @@ namespace WpfElmaBot.Service
             };
             
 
+        }
+        public async Task ClearUpdates()
+        {
+            var update = await bot.GetUpdatesAsync();
+            foreach (var item in update)
+            {
+                var offset = item.Id + 1;
+                await bot.GetUpdatesAsync(offset);
+            }
         }
     }
 }

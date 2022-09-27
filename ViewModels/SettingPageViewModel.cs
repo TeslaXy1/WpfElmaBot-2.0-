@@ -16,6 +16,7 @@ using WpfElmaBot.Service;
 using DataFormat = RestSharp.DataFormat;
 using System.IO;
 using WpfElmaBot_2._0_.Models.EntityPack;
+using System.Configuration;
 
 namespace WpfElmaBot_2._0_.ViewModels
 {
@@ -24,8 +25,9 @@ namespace WpfElmaBot_2._0_.ViewModels
         private static RestClient RestClient { get; set; }
         private static string authToken;
         private static string sessionToken;
+        private static Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-     
+
         private static SettingPage instance;
         public static SettingPage getInstance()
         {
@@ -153,10 +155,7 @@ namespace WpfElmaBot_2._0_.ViewModels
                 {
 
                     Loading = "Visible";
-
-                    //LoadingIcon.Visibility = Visibility.Visible;
                     Task.Run(() => CheckSetting());
-                    ///CheckSetting();
 
                 }
                 else
@@ -189,6 +188,15 @@ namespace WpfElmaBot_2._0_.ViewModels
             BackCommand = new LambdaCommand(OnBackCommandExecuted, CanBackCommandExecute);
             #endregion
 
+            TokenElma = ELMA.appToken;
+            TokenBot = TelegramCore.TelegramToken;
+            Adress = ELMA.FullURL;
+            Port = ELMA.FullURL;//TODO распарсить строку
+            TypeUid = ELMA.TypeUid;
+            Login = ELMA.login;
+            Password = ELMA.password;
+
+
             RestClient = new RestClient();
         }
 
@@ -210,8 +218,24 @@ namespace WpfElmaBot_2._0_.ViewModels
                             bool sprav = CheckEntity();
                             if (sprav == true)
                             {
-
+                                TelegramCore.TelegramToken = TokenBot;
+                                ELMA.FullURL = $"http://{Adress}:{Port}/API/REST/";
+                                ELMA.appToken = TokenElma;
+                                ELMA.TypeUid = TypeUid;
+                                ELMA.login = Login;
+                                ELMA.password = Password;
+                                ELMA.FullURLpublic = $"http://{Adress}:{Port}/PublicAPI/REST/";
                                 //TODO записать конфиг
+
+                                config.AppSettings.Settings["Login"].Value = Login;
+                                config.AppSettings.Settings["Password"].Value = Password;
+                                config.AppSettings.Settings["TokenElma"].Value = TokenElma;
+                                config.AppSettings.Settings["TokenTelegram"].Value = TokenBot;
+                                config.AppSettings.Settings["FullURL"].Value = $"http://{Adress}:{Port}/API/REST/";
+                                config.AppSettings.Settings["FullURLPublic"].Value = $"http://{Adress}:{Port}/PublicAPI/REST/";
+                                config.AppSettings.Settings["TypeUid"].Value = TypeUid;
+                                ConfigurationManager.RefreshSection("appSettings");
+                                config.Save(ConfigurationSaveMode.Modified);
 
                                 Loading = "Hidden";
                                 //ElmaMessages.Start();
@@ -227,6 +251,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             }
             catch (Exception ex)
             {
+                MainWindow.Log.Error("Ошибка проверки настроек | " + ex);
                 Loading = "Hidden"; //TODO обработка ошибок }
             }
         }

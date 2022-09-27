@@ -67,8 +67,8 @@
 
             
             
-            <TextBox x:Name="Reciv" Margin="10 60 0 0" Text="{Binding Consol}" Grid.Column="1" Grid.RowSpan="2" Panel.ZIndex="1" IsEnabled="False" IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630" VerticalScrollBarVisibility="Visible" Cursor="Arrow"/>
-            <!--<TextBox x:Name="txtError"  Margin="10 60 0 0" Visibility="Hidden" Grid.Column="1" Grid.RowSpan="2" Panel.ZIndex="1" IsEnabled="False" IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630" VerticalScrollBarVisibility="Visible" Cursor="Arrow"/>-->
+            <TextBox x:Name="Reciv"     Margin="10 60 0 0" Text="{Binding Consol}"  Visibility="{Binding VisibleConsol}"    Grid.Column="1" Grid.RowSpan="2" Panel.ZIndex="1" IsEnabled="False" IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630" VerticalScrollBarVisibility="Visible" Cursor="Arrow"/>
+            <TextBox x:Name="txtError"  Margin="10 60 0 0" Text="{Binding Error}"   Visibility="{Binding VisibleError}"     Grid.Column="1" Grid.RowSpan="2" Panel.ZIndex="1" IsEnabled="False" IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630" VerticalScrollBarVisibility="Visible" Cursor="Arrow"/>
 
            
 

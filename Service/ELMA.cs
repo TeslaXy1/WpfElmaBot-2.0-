@@ -9,6 +9,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using WpfElmaBot.Models;
 using WpfElmaBot.Service.Commands;
+using WpfElmaBot_2._0_;
 using WpfElmaBot_2._0_.Models.EntityPack;
 
 namespace WpfElmaBot.Service
@@ -17,12 +18,12 @@ namespace WpfElmaBot.Service
     {
         private static RestClient RestClient { get; set; }
         private static ELMA elma;
-        public static string FullURL { get; set; } = "http://127.0.0.1:8000/API/REST/";
-        private static string FullURLpublic { get; set; } = "http://127.0.0.1:8000/PublicAPI/REST/";
-        private static string appToken { get; set; } = "65605731B74E8CE81B9F8F2B799B0C00E0D2FFD8ACFDA1E01FFC4A8C4409A8FF853679B82D47E0FCD7E3E8480FA41917A94982C095819F291D788F041D880CC2";
-        public static string TypeUid { get; set; } = "c5c12f67-3f57-45c2-aa70-02dfded87f77";
-        public static string login { get; set; } = "Sprav";
-        public static string password { get; set; } = "0000";
+        public static string FullURL { get; set; }
+        public static string FullURLpublic { get; set; } 
+        public static string appToken { get; set; } 
+        public static string TypeUid { get; set; } 
+        public static string login { get; set; } 
+        public static string password { get; set; } 
 
 
         public ELMA()
@@ -139,6 +140,7 @@ namespace WpfElmaBot.Service
                 }
                 catch (Exception ex)
                 {
+                    MainWindow.Log.Error("Ошибка добавления записи в справочник | " + ex);
                     //TODO бработка ошибок
                 }
                 
@@ -162,6 +164,8 @@ namespace WpfElmaBot.Service
                 }
                 catch (Exception ex)
                 {
+                    MainWindow.Log.Error("Ошибка обновления записи в справочник | " + ex);
+
                     //TODO бработка ошибок
                 }
 

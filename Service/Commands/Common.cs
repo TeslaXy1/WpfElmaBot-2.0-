@@ -27,11 +27,21 @@ namespace WpfElmaBot.Service.Commands
             try
             {
                 OptionTelegramMessage message = new OptionTelegramMessage();
-                message.MenuInlineKeyboardMarkup = new[]
-                        {
-                            InlineKeyboardButton.WithCallbackData("Авторизация")
+                //message.MenuReplyKeyboardMarkup = new[]
+                //        {
+                           
+                //            message.MenuReplyKeyboardMarkup.Keyboard(),
+                //            //.WithCallbackData("Авторизация")
 
-                        };
+                //        };
+             
+
+                message.MenuReplyKeyboardMarkup =
+                    new string[][]
+                    {
+                        new string[] {"Авторизация"}
+                    };
+
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Ваш id {update.Message.Chat.Id}", cancellationToken, message);
             }
             catch (Exception ex)
@@ -72,24 +82,24 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
+                botClient.ClearStepUser(update.Message.Chat.Id);
                 botClient.GetCacheData(update.GetChatId()).Value.Password = update.Message.Text;
                 KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);            
                 string path = $"Authorization/LoginWith?username={loginpas.Value.Login}";
                 var authorization =  await elma.PostRequest<Auth>(path, loginpas.Value.Password);
                 elma.AuthorizationUser(authorization, Convert.ToInt64(update.Message.Chat.Id),loginpas.Value.Login);
-
+                
 
                 botClient.GetCacheData(update.GetChatId()).Value.AuthToken = authorization.AuthToken;
                 botClient.GetCacheData(update.GetChatId()).Value.SessionToken = authorization.SessionToken;
 
                 //TODO проверка наличия пользователя в справочнике
 
-
+            
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken);
             }
             catch (Exception ex)
             {
-
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken);
             }
         }
@@ -105,5 +115,7 @@ namespace WpfElmaBot.Service.Commands
                 //TODO Вывод exception
             }
         }
+        
+
     }
 }

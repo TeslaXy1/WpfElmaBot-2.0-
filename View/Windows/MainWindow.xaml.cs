@@ -1,5 +1,8 @@
-﻿using System;
+﻿using NLog;
+using System;
+using System.Configuration;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using WpfElmaBot.Service;
 using WpfElmaBot_2._0_.Service;
@@ -14,18 +17,17 @@ namespace WpfElmaBot_2._0_
     /// </summary>
     public partial class MainWindow : Window
     {
-     
+
+        public static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
 
         public MainWindow()
         {
             InitializeComponent();
 
-            new TelegramCore().Start();
-            ElmaMessages.Start();
-            //MainWindowViewModel.getInstance().Status = "бот запущен";
-
-
+          
         }
+
 
 
         private void MainWind_MouseDown(object sender, MouseButtonEventArgs e)
@@ -35,6 +37,7 @@ namespace WpfElmaBot_2._0_
                 this.DragMove();
             }
         }
+        
             
     }
 }
