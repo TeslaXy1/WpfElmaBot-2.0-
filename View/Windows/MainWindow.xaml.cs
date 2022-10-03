@@ -18,7 +18,6 @@ namespace WpfElmaBot_2._0_
     public partial class MainWindow : Window
     {
 
-        public static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
 
         public MainWindow()

@@ -58,7 +58,7 @@ namespace WpfElmaBot_2._0_.Service
                 }
                 catch (Exception exception)
                 {
-                    MainWindow.Log.Error("Ошибка цикла получения смс | " + exception);
+                    MainWindowViewModel.Log.Error("Ошибка цикла получения смс | " + exception);
 
                 }
 
@@ -84,8 +84,8 @@ namespace WpfElmaBot_2._0_.Service
                 catch(Exception exeption)
                 {
                     Stop();
-                    MessageBox.Show("Неверный логин или пароль");                  
-                    MainWindow.Log.Error("Ошибка авторизации спарвочника | "+exeption);
+                    MessageBox.Show("Неверный логин или пароль");
+                    MainWindowViewModel.Log.Error("Ошибка авторизации спарвочника | "+exeption);
                     mwvm.Error += "Неверный логин или пароль" + "\n";
 
                 }
@@ -107,11 +107,11 @@ namespace WpfElmaBot_2._0_.Service
                         try
                         {
                             var message = await ELMA.getInstance().GetUnreadMessage<MessegesOtvet>(chekToken.AuthToken,chekToken.SessionToken);
-                            GenerateMsg(message);
+                            GenerateMsg(message,loginUser);
                         }
                         catch (Exception exception)
                         {
-                            MainWindow.Log.Error($"Неудалось получить сообщения пользователя {loginUser} | " + exception);
+                            MainWindowViewModel.Log.Error($"Неудалось получить сообщения пользователя {loginUser} | " + exception);
                              
                             //TODO обработчик ошибок
                             //i++;
@@ -162,12 +162,19 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch(Exception ex)
             {
-                MainWindow.Log.Error("Ошибка обновления статуса в справочнике | " + ex);
+                if(ex.Message == "Error converting value \"76\" to type 'WpfElmaBot.Models.Entity'. Path '', line 1, position 4.")
+                {
+
+                }
+                else
+                {
+                    MainWindowViewModel.Log.Error("Ошибка обновления статуса в справочнике | " + ex);
+                }
+                
                 
                 //TODO обработать исключение
             }
 
-            //TODO пост запрос обновление статуса
         }
 
         public static async Task UpdateMessage(string userelma, long idtelegram, string authtoken, string sessiontoken, string login, int maxIdMes, int identity)
@@ -190,13 +197,19 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch (Exception ex)
             {
-                MainWindow.Log.Error("Ошибка обновения последнего сообщения в справочнике | " + ex);
+                if(ex.Message == "Error converting value \"76\" to type 'WpfElmaBot.Models.Entity'. Path '', line 1, position 4.")
+                { }
+                else
+                {
+                    MainWindowViewModel.Log.Error("Ошибка обновения последнего сообщения в справочнике | " + ex);
+
+                }
                 //TODO обработать исключение
             }
             //TODO записать последнее сообщение
 
         }
-        public static async Task GenerateMsg(MessegesOtvet message)
+        public async Task GenerateMsg(MessegesOtvet message,string user)
         {
             try
             { 
@@ -210,14 +223,14 @@ namespace WpfElmaBot_2._0_.Service
 
                             bool isTask = message.Data[j].ObjectGroupText == "Задача";
                             bool hasText = message.Data[j].Text == null;
-
                             string msg = (isTask ? "Новая задача📋" : "Новое сообщение📋");
                             msg += "\n";
                             msg += "👨‍💻 " + message.Data[j].CreationAuthor.Name;
                             msg += "\n";
                             msg += "📃 " + message.Data[j].Subject;
-                            msg += (hasText ? "" : "\n" + message.Data[j].Text);
+                            msg += (hasText ? "" : "\n📝" + message.Data[j].Text);
                             await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: msg, TelegramCore.cancellation);
+                           MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Сообщение {message.Data[j].Id} отправлено пользователю {user}");
                         }
 
                     }
@@ -226,7 +239,7 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch
             {
-                new MainWindowViewModel().Error = $"{DateTime.Now.ToString("g")} неверный логин или пароль для справочника";
+                mwvm.Error = $"{DateTime.Now.ToString("g")} неверный логин или пароль для справочника";
             }
         }
        

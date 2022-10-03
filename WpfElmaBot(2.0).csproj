@@ -6,10 +6,15 @@
     <RootNamespace>WpfElmaBot_2._0_</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>MainIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Resources\logoBot.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="MainIcon.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +30,12 @@
     <Resource Include="Resources\logoBot.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

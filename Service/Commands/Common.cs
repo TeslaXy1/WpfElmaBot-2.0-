@@ -15,7 +15,8 @@ namespace WpfElmaBot.Service.Commands
     {
         private CommandRoute route;
         private ELMA elma = new ELMA();
-       
+        public OptionTelegramMessage message = new OptionTelegramMessage();
+
         public Common(CommandRoute route)
         {
             
@@ -26,21 +27,14 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
-                OptionTelegramMessage message = new OptionTelegramMessage();
-                //message.MenuReplyKeyboardMarkup = new[]
-                //        {
-                           
-                //            message.MenuReplyKeyboardMarkup.Keyboard(),
-                //            //.WithCallbackData("Авторизация")
 
-                //        };
-             
+
 
                 message.MenuReplyKeyboardMarkup =
-                    new string[][]
-                    {
+                     new string[][]
+                     {
                         new string[] {"Авторизация"}
-                    };
+                     };
 
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Ваш id {update.Message.Chat.Id}", cancellationToken, message);
             }
@@ -54,8 +48,8 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
-               
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken);               
+                message.ClearMenu = true;
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);               
                 botClient.RegisterNextStep(update.Message.Chat.Id, Login);
             }
             catch (Exception ex)
@@ -82,9 +76,12 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
+                message.ClearMenu = true;
+              
                 botClient.ClearStepUser(update.Message.Chat.Id);
                 botClient.GetCacheData(update.GetChatId()).Value.Password = update.Message.Text;
-                KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);            
+                KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
+                //string pass = $@"""{loginpas.Value.Login}""";
                 string path = $"Authorization/LoginWith?username={loginpas.Value.Login}";
                 var authorization =  await elma.PostRequest<Auth>(path, loginpas.Value.Password);
                 elma.AuthorizationUser(authorization, Convert.ToInt64(update.Message.Chat.Id),loginpas.Value.Login);
@@ -96,11 +93,17 @@ namespace WpfElmaBot.Service.Commands
                 //TODO проверка наличия пользователя в справочнике
 
             
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken);
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken, message);
             }
             catch (Exception ex)
             {
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken);
+                OptionTelegramMessage auth = new OptionTelegramMessage();
+                auth.MenuReplyKeyboardMarkup =
+                     new string[][]
+                     {
+                        new string[] {"Авторизация"}
+                     };
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken, auth);
             }
         }
         public async Task Menu(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)

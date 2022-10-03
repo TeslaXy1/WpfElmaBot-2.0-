@@ -190,8 +190,8 @@ namespace WpfElmaBot_2._0_.ViewModels
 
             TokenElma = ELMA.appToken;
             TokenBot = TelegramCore.TelegramToken;
-            Adress = ELMA.FullURL;
-            Port = ELMA.FullURL;//TODO распарсить строку
+            Adress = MainWindowViewModel.Adress;
+            Port = MainWindowViewModel.Port;
             TypeUid = ELMA.TypeUid;
             Login = ELMA.login;
             Password = ELMA.password;
@@ -251,7 +251,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             }
             catch (Exception ex)
             {
-                MainWindow.Log.Error("Ошибка проверки настроек | " + ex);
+                MainWindowViewModel.Log.Error("Ошибка проверки настроек | " + ex);
                 Loading = "Hidden"; //TODO обработка ошибок }
             }
         }
@@ -275,14 +275,6 @@ namespace WpfElmaBot_2._0_.ViewModels
 
             try
             {
-
-                //var request = new RestRequest($"http://{Adress}:{Port}/API/REST/Authorization/LoginWith?username={Login}");
-                //request.AddHeader("ApplicationToken", TokenElma);
-                //request.AddStringBody(Password, DataFormat.Json);
-                //var test = RestClient.BuildUri(request);
-                //var response = RestClient.PostAsync(request);
-                //var answer = JsonConvert.DeserializeObject<Auth>(response.ToString());
-
                 HttpWebRequest req = WebRequest.Create(String.Format($"http://{Adress}:{Port}/API/REST/Authorization/LoginWith?username={Login}")) as HttpWebRequest;
                 req.Headers.Add("ApplicationToken", TokenElma);
                 req.Method = "POST";

@@ -11,6 +11,7 @@ using WpfElmaBot.Models;
 using WpfElmaBot.Service.Commands;
 using WpfElmaBot_2._0_;
 using WpfElmaBot_2._0_.Models.EntityPack;
+using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot.Service
 {
@@ -78,6 +79,12 @@ namespace WpfElmaBot.Service
             return JsonConvert.DeserializeObject<List<T>>(response.Content.Trim(new char[] { '\uFEFF' }));
 
         }
+        public async Task<T> GetEntityById<T>(string typeUId, long entityId, string authToken = null, string sessionToken = null) where T : Entity
+        {
+            
+            var obj = await GetRequest<T>($"{FullURL}Entity/Load?type={typeUId}&id={entityId}",authToken,sessionToken);
+            return obj;
+        }
 
         public async Task<T> GetUnreadMessage<T>(string authtoken, string sessionToken) where T : MessegesOtvet
         {
@@ -140,7 +147,7 @@ namespace WpfElmaBot.Service
                 }
                 catch (Exception ex)
                 {
-                    MainWindow.Log.Error("Ошибка добавления записи в справочник | " + ex);
+                    MainWindowViewModel.Log.Error("Ошибка добавления записи в справочник | " + ex);
                     //TODO бработка ошибок
                 }
                 
@@ -164,7 +171,7 @@ namespace WpfElmaBot.Service
                 }
                 catch (Exception ex)
                 {
-                    MainWindow.Log.Error("Ошибка обновления записи в справочник | " + ex);
+                    MainWindowViewModel.Log.Error("Ошибка обновления записи в справочник | " + ex);
 
                     //TODO бработка ошибок
                 }

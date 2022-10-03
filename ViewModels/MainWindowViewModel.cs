@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Configuration;
 using System.Windows.Input;
 using WpfElmaBot.Service;
@@ -12,7 +13,10 @@ namespace WpfElmaBot_2._0_.ViewModels
     public class MainWindowViewModel : ViewModel
     {
 
-        
+        public static string Adress;
+        public static string Port;
+        public static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
         private static MainWindowViewModel instance;
         public static MainWindowViewModel getInstance()
         {
@@ -167,7 +171,11 @@ namespace WpfElmaBot_2._0_.ViewModels
         public ICommand CloseAppCommand { get; set; }
         private void OnCloseAppCommandExecuted(object p)
         {
-            Environment.Exit(0);
+            object locker = new();
+            lock (locker)
+            {
+                Environment.Exit(1);
+            }
         }
         private bool CanCloseAppCommandExecute(object p) => true;
         #endregion
@@ -193,8 +201,17 @@ namespace WpfElmaBot_2._0_.ViewModels
             ELMA.TypeUid                 = ConfigurationManager.AppSettings.Get("TypeUid");
             TelegramCore.TelegramToken   = ConfigurationManager.AppSettings.Get("TokenTelegram");
 
+            string[] AdressPort = ELMA.FullURL.Split('/');
+            string [] adresport = AdressPort[2].Split(':');
+            Adress = adresport[0];
+            Port = adresport[1];
+
+            Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\n-----------------------------------------------------------");//TODO Порт и адрес
             new TelegramCore(this).Start();
             new  ElmaMessages(this).Start();
+
+            
+
         }
 
     }
