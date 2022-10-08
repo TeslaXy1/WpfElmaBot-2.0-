@@ -41,7 +41,7 @@ namespace WpfElmaBot.Service
         }
 
 
-        public async Task<Auth> UpdateToken<Auth>(string authtoken = null)
+        public async Task<Auth> UpdateToken<Auth>(string authtoken)
         {
             var data = await GetRequest<Auth>($"{FullURL}Authorization/CheckToken?token={authtoken}");
             return data;
@@ -148,7 +148,7 @@ namespace WpfElmaBot.Service
                 catch (Exception ex)
                 {
                     MainWindowViewModel.Log.Error("Ошибка добавления записи в справочник | " + ex);
-                    //TODO бработка ошибок
+               
                 }
                 
             }
@@ -173,7 +173,7 @@ namespace WpfElmaBot.Service
                 {
                     MainWindowViewModel.Log.Error("Ошибка обновления записи в справочник | " + ex);
 
-                    //TODO бработка ошибок
+                    
                 }
 
             }

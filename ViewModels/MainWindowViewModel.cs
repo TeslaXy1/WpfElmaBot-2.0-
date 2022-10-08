@@ -3,6 +3,7 @@ using System;
 using System.Configuration;
 using System.Windows.Input;
 using WpfElmaBot.Service;
+using WpfElmaBot.Service.Commands;
 using WpfElmaBot_2._0_.Infrastructure.Commands;
 using WpfElmaBot_2._0_.Service;
 using WpfElmaBot_2._0_.View.Windows;
@@ -174,7 +175,8 @@ namespace WpfElmaBot_2._0_.ViewModels
             object locker = new();
             lock (locker)
             {
-                Environment.Exit(1);
+                Environment.Exit(0);
+                
             }
         }
         private bool CanCloseAppCommandExecute(object p) => true;
@@ -184,31 +186,40 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         public MainWindowViewModel()
         {
-           
-            #region Команды
-            MainBtnCommand               = new LambdaCommand(OnMainBtnCommandExecuted, CanMainBtnCommandExecute);
-            SettingBtnCommand            = new LambdaCommand(OnSettingBtnCommandExecuted, CanSettingBtnCommandExecute);
-            ErrorBtnCommand              = new LambdaCommand(OnErrorBtnCommandExecuted, CanErrorBtnCommandExecute);
-            CloseAppCommand              = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
-            #endregion
+            try
+            {
 
 
-            ELMA.appToken                = ConfigurationManager.AppSettings.Get("TokenElma");
-            ELMA.FullURL                 = ConfigurationManager.AppSettings.Get("FullURL"); ;
-            ELMA.FullURLpublic           = ConfigurationManager.AppSettings.Get("FullURLPublic");
-            ELMA.login                   = ConfigurationManager.AppSettings.Get("Login");
-            ELMA.password                = ConfigurationManager.AppSettings.Get("Password");
-            ELMA.TypeUid                 = ConfigurationManager.AppSettings.Get("TypeUid");
-            TelegramCore.TelegramToken   = ConfigurationManager.AppSettings.Get("TokenTelegram");
+                #region Команды
+                MainBtnCommand = new LambdaCommand(OnMainBtnCommandExecuted, CanMainBtnCommandExecute);
+                SettingBtnCommand = new LambdaCommand(OnSettingBtnCommandExecuted, CanSettingBtnCommandExecute);
+                ErrorBtnCommand = new LambdaCommand(OnErrorBtnCommandExecuted, CanErrorBtnCommandExecute);
+                CloseAppCommand = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
+                #endregion
 
-            string[] AdressPort = ELMA.FullURL.Split('/');
-            string [] adresport = AdressPort[2].Split(':');
-            Adress = adresport[0];
-            Port = adresport[1];
 
-            Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\n-----------------------------------------------------------");//TODO Порт и адрес
-            new TelegramCore(this).Start();
-            new  ElmaMessages(this).Start();
+                ELMA.appToken = ConfigurationManager.AppSettings.Get("TokenElma");
+                ELMA.FullURL = ConfigurationManager.AppSettings.Get("FullURL"); ;
+                ELMA.FullURLpublic = ConfigurationManager.AppSettings.Get("FullURLPublic");
+                ELMA.login = ConfigurationManager.AppSettings.Get("Login");
+                ELMA.password = ConfigurationManager.AppSettings.Get("Password");
+                ELMA.TypeUid = ConfigurationManager.AppSettings.Get("TypeUid");
+                TelegramCore.TelegramToken = ConfigurationManager.AppSettings.Get("TokenTelegram");
+                Common.IsPass = ConfigurationManager.AppSettings.Get("IsPass");
+
+                string[] AdressPort = ELMA.FullURL.Split('/');
+                string[] adresport = AdressPort[2].Split(':');
+                Adress = adresport[0];
+                Port = adresport[1];
+
+                Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\nАдрес: {Adress}\nПорт: {Port}\n-----------------------------------------------------------");
+                new TelegramCore(this).Start();
+                new ElmaMessages(this).Start();
+            }
+            catch(Exception ex)
+            {
+                Log.Error("Ошибка конструктора MainWindowViewModel | " + ex);
+            }
 
             
 

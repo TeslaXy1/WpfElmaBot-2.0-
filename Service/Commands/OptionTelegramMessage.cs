@@ -18,7 +18,7 @@ namespace WpfElmaBot.Service.Commands
 
         public OptionTelegramMessage()
         {
-            //this.ClearMenu = ClearMenu;
+           
         }   
     }
 }

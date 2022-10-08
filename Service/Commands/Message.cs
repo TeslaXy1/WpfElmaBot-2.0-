@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot.Service.Commands
 {
@@ -70,7 +71,7 @@ namespace WpfElmaBot.Service.Commands
             }
             catch (Exception ex)
             {
-                //TODO добавить обработку Exception
+                MainWindowViewModel.Log.Error("Ошибка отправки сообщений в телеграм | " + ex);
             }
 
         }

@@ -17,6 +17,7 @@ using DataFormat = RestSharp.DataFormat;
 using System.IO;
 using WpfElmaBot_2._0_.Models.EntityPack;
 using System.Configuration;
+using WpfElmaBot.Service.Commands;
 
 namespace WpfElmaBot_2._0_.ViewModels
 {
@@ -36,6 +37,11 @@ namespace WpfElmaBot_2._0_.ViewModels
             return instance;
         }
         #region Свойства
+
+        #region чекбокс проверки кавычек
+        public bool IsPass { get; set; }
+
+        #endregion
 
         #region Токен Elma
 
@@ -163,7 +169,10 @@ namespace WpfElmaBot_2._0_.ViewModels
                     MessageBox.Show("Заполните все поля");
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                MainWindowViewModel.Log.Error("Ошибка запуска потока проверки настроек | " + ex);
+            }
         }
         private bool CanSaveSettingsCommandExecute(object p) => true;
         #endregion
@@ -183,21 +192,34 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         public SettingPageViewModel()
         {
-            #region Команды
-            SaveSettingsCommand = new LambdaCommand(OnSaveSettingsCommandExecuted, CanSaveSettingsCommandExecute);
-            BackCommand = new LambdaCommand(OnBackCommandExecuted, CanBackCommandExecute);
-            #endregion
-
-            TokenElma = ELMA.appToken;
-            TokenBot = TelegramCore.TelegramToken;
-            Adress = MainWindowViewModel.Adress;
-            Port = MainWindowViewModel.Port;
-            TypeUid = ELMA.TypeUid;
-            Login = ELMA.login;
-            Password = ELMA.password;
+            try
+            {
 
 
-            RestClient = new RestClient();
+                #region Команды
+                SaveSettingsCommand = new LambdaCommand(OnSaveSettingsCommandExecuted, CanSaveSettingsCommandExecute);
+                BackCommand = new LambdaCommand(OnBackCommandExecuted, CanBackCommandExecute);
+                #endregion
+
+                TokenElma = ELMA.appToken;
+                TokenBot = TelegramCore.TelegramToken;
+                Adress = MainWindowViewModel.Adress;
+                Port = MainWindowViewModel.Port;
+                TypeUid = ELMA.TypeUid;
+                Login = ELMA.login;
+                Password = ELMA.password;
+                if (Common.IsPass == "true")
+                {
+                    IsPass = true;
+                }
+                else { IsPass = false; }
+
+                RestClient = new RestClient();
+            }
+            catch(Exception ex)
+            {
+                MainWindowViewModel.Log.Error("Ошибка конструкта SettingPageViewModel | " + ex);
+            }
         }
 
         #region Функции проверки настроек
@@ -218,28 +240,18 @@ namespace WpfElmaBot_2._0_.ViewModels
                             bool sprav = CheckEntity();
                             if (sprav == true)
                             {
-                                TelegramCore.TelegramToken = TokenBot;
-                                ELMA.FullURL = $"http://{Adress}:{Port}/API/REST/";
-                                ELMA.appToken = TokenElma;
-                                ELMA.TypeUid = TypeUid;
-                                ELMA.login = Login;
-                                ELMA.password = Password;
-                                ELMA.FullURLpublic = $"http://{Adress}:{Port}/PublicAPI/REST/";
-                                //TODO записать конфиг
-
-                                config.AppSettings.Settings["Login"].Value = Login;
-                                config.AppSettings.Settings["Password"].Value = Password;
-                                config.AppSettings.Settings["TokenElma"].Value = TokenElma;
-                                config.AppSettings.Settings["TokenTelegram"].Value = TokenBot;
-                                config.AppSettings.Settings["FullURL"].Value = $"http://{Adress}:{Port}/API/REST/";
-                                config.AppSettings.Settings["FullURLPublic"].Value = $"http://{Adress}:{Port}/PublicAPI/REST/";
-                                config.AppSettings.Settings["TypeUid"].Value = TypeUid;
+                                if(IsPass==true)
+                                {
+                                    config.AppSettings.Settings["IsPass"].Value = "true";
+                                }
+                                else { config.AppSettings.Settings["IsPass"].Value = "false"; }
+                               
                                 ConfigurationManager.RefreshSection("appSettings");
                                 config.Save(ConfigurationSaveMode.Modified);
 
                                 Loading = "Hidden";
                                 //ElmaMessages.Start();
-                                MessageBox.Show("Успешно.Настройка завершена");
+                                MessageBox.Show("Успешно.Настройка завершена. Для применения настроек перезапустите программу.");
                             }
                             else { Loading = "Hidden"; MessageBox.Show("Неверный Uid справочника. Настройка не завершена"); }
                         }
@@ -252,7 +264,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             catch (Exception ex)
             {
                 MainWindowViewModel.Log.Error("Ошибка проверки настроек | " + ex);
-                Loading = "Hidden"; //TODO обработка ошибок }
+                Loading = "Hidden"; 
             }
         }
 
@@ -262,19 +274,27 @@ namespace WpfElmaBot_2._0_.ViewModels
             {
                 ITelegramBotClient bot = new TelegramBotClient(TokenBot);
                 bot.GetMeAsync().Wait();
+                TelegramCore.TelegramToken = TokenBot;
+                config.AppSettings.Settings["TokenTelegram"].Value = TokenBot;
+                ConfigurationManager.RefreshSection("appSettings");
+                config.Save(ConfigurationSaveMode.Modified);
 
-                //TODO присвоить значение токена к переменой
                 return true;
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                MainWindowViewModel.Log.Error("Ошибка проверки бота | " + ex);
+                return false; 
+            }
 
         }
 
         private bool CheckTokenElmaandLoginPas()
         {
-
+            byte [] sentData = new byte[5000];
             try
             {
+
                 HttpWebRequest req = WebRequest.Create(String.Format($"http://{Adress}:{Port}/API/REST/Authorization/LoginWith?username={Login}")) as HttpWebRequest;
                 req.Headers.Add("ApplicationToken", TokenElma);
                 req.Method = "POST";
@@ -282,7 +302,15 @@ namespace WpfElmaBot_2._0_.ViewModels
                 req.ContentType = "application/json; charset=utf-8";
 
                 //данные для отправки. используется для передачи пароля. пароль нужно записать вместо пустой строки
-                var sentData = Encoding.UTF8.GetBytes(Password);
+                if(IsPass == false)
+                {
+                    sentData = Encoding.UTF8.GetBytes(Password);
+                }
+                else 
+                {
+                    sentData = Encoding.UTF8.GetBytes($@"""{Password}"""); 
+                }
+                
                 req.ContentLength = sentData.Length;
                 Stream sendStream = req.GetRequestStream();
                 sendStream.Write(sentData, 0, sentData.Length);
@@ -296,9 +324,27 @@ namespace WpfElmaBot_2._0_.ViewModels
                 authToken = dict["AuthToken"];
                 sessionToken = dict["SessionToken"];
 
+
+                
+                ELMA.appToken = TokenElma;
+                ELMA.login = Login;
+                ELMA.password = Password;
+                
+
+
+                config.AppSettings.Settings["Login"].Value = Login;
+                config.AppSettings.Settings["Password"].Value = Password;
+                config.AppSettings.Settings["TokenElma"].Value = TokenElma;
+                ConfigurationManager.RefreshSection("appSettings");
+                config.Save(ConfigurationSaveMode.Modified);
+
                 return true;
             }
-            catch { return false;  }
+            catch (Exception ex)   
+            {
+                MainWindowViewModel.Log.Error("Ошибка проверки токена Elma, логина с паролем | " + ex);
+                return false;  
+            }
         }
 
         private bool CheckAdresPort()
@@ -319,13 +365,22 @@ namespace WpfElmaBot_2._0_.ViewModels
                 else
                 {
 
-                    //TODO присвоить значения переменным
+                    ELMA.FullURL = $"http://{Adress}:{Port}/API/REST/";
+                    ELMA.FullURLpublic = $"http://{Adress}:{Port}/PublicAPI/REST/";
+                    config.AppSettings.Settings["FullURL"].Value = $"http://{Adress}:{Port}/API/REST/";
+                    config.AppSettings.Settings["FullURLPublic"].Value = $"http://{Adress}:{Port}/PublicAPI/REST/";
+                    ConfigurationManager.RefreshSection("appSettings");
+                    config.Save(ConfigurationSaveMode.Modified);
 
                     response.Close();
                     return true;
                 }
             }
-            catch { return false; };
+            catch (Exception ex)
+            {
+                MainWindowViewModel.Log.Error("Ошибка проверки адреса | " + ex);
+                return false; 
+            }
 
 
         }
@@ -335,10 +390,18 @@ namespace WpfElmaBot_2._0_.ViewModels
             try
             {
                 var entity = new ELMA().GetEntity<EntityMargin>($"Entity/Query?type={TypeUid}", authToken, sessionToken);
+
+
+                ELMA.TypeUid = TypeUid;
+                config.AppSettings.Settings["TypeUid"].Value = TypeUid;
+                ConfigurationManager.RefreshSection("appSettings");
+                config.Save(ConfigurationSaveMode.Modified);
+
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                MainWindowViewModel.Log.Error("Ошибка проверки справочника | " + ex);
                 return false;
             }
             

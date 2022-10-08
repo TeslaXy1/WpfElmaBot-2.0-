@@ -32,6 +32,9 @@ namespace WpfElmaBot_2._0_.Service
         public ElmaMessages(MainWindowViewModel mwvm)
         {
             this.mwvm = mwvm;
+            this.mwvm.Consol = "Здесь будут отображаться сообщения из телеграма\n" + Environment.NewLine;
+            this.mwvm.Error = "Здесь будут отображаться неполадки в работе программы\n";
+
         }
 
         private static CommandRoute route = new CommandRoute();
@@ -111,26 +114,23 @@ namespace WpfElmaBot_2._0_.Service
                         }
                         catch (Exception exception)
                         {
+
                             MainWindowViewModel.Log.Error($"Неудалось получить сообщения пользователя {loginUser} | " + exception);
                              
-                            //TODO обработчик ошибок
-                            //i++;
                         }
 
 
                     }
                     catch (Exception exception)
                     {
-                        //TODO обновление данных в справочнике (AuthorizationUser = false)
-                        mwvm.Error += exception + "\n";
+
+                        MainWindowViewModel.Log.Error("Ошибка авторизации спарвочника | " + exception);
                         await UpdateStatus(userElma, idTelegram, authToken, sessionToken, loginUser , idMessage, entityId);
                         if(status!="false")
                         {
-                            await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: "Вам нужно авторизоваться", TelegramCore.cancellation);
+                            await route.MessageCommand.Send(TelegramCore.getInstance().bot, chatId: idTelegram, msg: "Вам нужно авторизоваться", TelegramCore.cancellation);
                         }
-                        
 
-                        //i++;
                     }
                 }
                 
@@ -138,7 +138,7 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch(Exception exception)
             {
-                //TODO обработчик ошибок
+                MainWindowViewModel.Log.Error("Ошибка обработки сообщений | " + exception);
             }
 
         }
@@ -172,7 +172,7 @@ namespace WpfElmaBot_2._0_.Service
                 }
                 
                 
-                //TODO обработать исключение
+               
             }
 
         }
@@ -204,9 +204,9 @@ namespace WpfElmaBot_2._0_.Service
                     MainWindowViewModel.Log.Error("Ошибка обновения последнего сообщения в справочнике | " + ex);
 
                 }
-                //TODO обработать исключение
+                
             }
-            //TODO записать последнее сообщение
+            
 
         }
         public async Task GenerateMsg(MessegesOtvet message,string user)
@@ -229,22 +229,21 @@ namespace WpfElmaBot_2._0_.Service
                             msg += "\n";
                             msg += "📃 " + message.Data[j].Subject;
                             msg += (hasText ? "" : "\n📝" + message.Data[j].Text);
-                            await route.MessageCommand.Send(TelegramCore.bot, chatId: idTelegram, msg: msg, TelegramCore.cancellation);
-                           MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Сообщение {message.Data[j].Id} отправлено пользователю {user}");
+                            await route.MessageCommand.Send(TelegramCore.getInstance().bot, chatId: idTelegram, msg: msg, TelegramCore.cancellation);
+                            MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Сообщение {message.Data[j].Id} отправлено пользователю {user}");
                         }
 
                     }
                     await UpdateMessage(userElma, idTelegram, authToken, sessionToken, loginUser, maxIdMes, entityId);
                 }
             }
-            catch
+            catch(Exception ex)
             {
                 mwvm.Error = $"{DateTime.Now.ToString("g")} неверный логин или пароль для справочника";
+                MainWindowViewModel.Log.Error("Ошибка авторизации спарвочника | " + ex);
             }
         }
        
-       //TODO авторизация справочника
-       //TODO получение записей 
-       //TODO прогон всех записей
+      
     }
 }

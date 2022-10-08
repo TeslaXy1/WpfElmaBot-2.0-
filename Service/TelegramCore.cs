@@ -12,14 +12,22 @@ namespace WpfElmaBot.Service
 {
     public class TelegramCore
     {
-        public static string TelegramToken= "5440355360:AAEHIY2L0IaRF-VWPSkyhMvNrOqSjsEwm1s";
-        public static ITelegramBotClient bot = new TelegramBotClient(TelegramToken);
+        public static string TelegramToken;
+        public ITelegramBotClient bot = new TelegramBotClient(TelegramToken);
         public static CancellationToken cancellation;
 
+
+        private static TelegramCore instance;
+        public static TelegramCore getInstance()
+        {
+
+            if (instance == null)
+                instance = new TelegramCore();
+            return instance;
+        }
+
         private MainWindowViewModel vm;
-
-
-        public TelegramCore(MainWindowViewModel vm)
+        public TelegramCore(MainWindowViewModel vm = null)
         {
             this.vm = vm;
         }
@@ -64,9 +72,9 @@ namespace WpfElmaBot.Service
                 }
 
             }
-            catch (Exception exeption) 
-            { 
-                //TODO обработка ошибок
+            catch (Exception ex) 
+            {
+                MainWindowViewModel.Log.Error("Ошибка обновления телеграма | " + ex);
             }
 
         }
@@ -79,7 +87,8 @@ namespace WpfElmaBot.Service
                     => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
                 _ => exception.ToString()
             };
-            
+            MainWindowViewModel.Log.Error("Ошибка телеграм | " + ErrorMessage);
+
 
         }
         public async Task ClearUpdates()
