@@ -90,7 +90,7 @@ namespace WpfElmaBot.Service
         {
             string AFTER = "";
             string BEFORE = "";
-            var LIMIT = "20";
+            var LIMIT = "200";
             var ONLYUNREAD = "true";
             //var updateToken = await UpdateToken<Auth>(authtoken);
             var obj = await GetRequest<T>($"{FullURLpublic}EleWise.ELMA.Messages/MessageFeed/Posts/Feed?after={AFTER}&before={BEFORE}&limit={LIMIT}&onlyUnread={ONLYUNREAD}", authtoken, sessionToken);

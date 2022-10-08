@@ -80,7 +80,8 @@ namespace WpfElmaBot_2._0_.Service
                 await Task.Delay(TimeSpan.FromSeconds(wait));
                 try
                 {
-                    var authEntity = await ELMA.getInstance().PostRequest<Auth>($"Authorization/LoginWith?username={ELMA.login}", ELMA.password);
+                    //await ELMA.getInstance().PostRequest<Auth>($"Authorization/LoginWith?username={ELMA.login}", ELMA.password);
+                    var authEntity = await AuthUser(ELMA.login, ELMA.password);
                     authSprav = authEntity.AuthToken;
                     sessionSprav = authEntity.SessionToken;
                 }
@@ -243,7 +244,13 @@ namespace WpfElmaBot_2._0_.Service
                 MainWindowViewModel.Log.Error("Ошибка авторизации спарвочника | " + ex);
             }
         }
-       
-      
+
+        public async Task<Auth> AuthUser(string login,string password)
+        {
+            var authEntity = await ELMA.getInstance().PostRequest<Auth>($"Authorization/LoginWith?username={login}", password);
+            return authEntity;
+        }
+
+
     }
 }
