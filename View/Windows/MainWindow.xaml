@@ -65,9 +65,11 @@
                 </StackPanel>
             </Border>
 
-            
-            
-            <TextBox x:Name="Reciv"     Margin="10 60 0 0" Text="{Binding Consol}"  Visibility="{Binding VisibleConsol}"    Grid.Column="1" Grid.RowSpan="2" Panel.ZIndex="1" IsEnabled="False" IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630" VerticalScrollBarVisibility="Visible" Cursor="Arrow"/>
+
+        
+                <TextBox x:Name="Reciv"  Grid.Column="1" Grid.RowSpan="2"   Margin="10 60 0 0" Text="{Binding Consol}"   Visibility="{Binding VisibleConsol}" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"    Panel.ZIndex="1" IsReadOnly="True" IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630" VerticalScrollBarVisibility="Visible" Cursor="Arrow"/>
+
+          
             <TextBox x:Name="txtError"  Margin="10 60 0 0" Text="{Binding Error}"   Visibility="{Binding VisibleError}"     Grid.Column="1" Grid.RowSpan="2" Panel.ZIndex="1" IsEnabled="False" IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630" VerticalScrollBarVisibility="Visible" Cursor="Arrow"/>
 
            

@@ -8,6 +8,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using WpfElmaBot.Models;
+using WpfElmaBot_2._0_.Service.Commands;
 using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot.Service.Commands
@@ -28,20 +29,27 @@ namespace WpfElmaBot.Service.Commands
         }
 
         
-        public async Task GetMyId(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task Start(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             try
             {
+                List<string> ids = new List<string>() { "🔑Авторизация"};
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2,ids ,"");
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken,message);
+            }
+            catch (Exception ex)
+            {
+                MainWindowViewModel.Log.Error("Ошибка на шаге /start | " + ex);
+            }
+        }
 
-
-
-                message.MenuReplyKeyboardMarkup =
-                     new string[][]
-                     {
-                        new string[] {"Авторизация"}
-                     };
-
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Ваш id {update.Message.Chat.Id}", cancellationToken, message);
+        public async Task Menu(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
+            try
+            {
+                List<string> ids = new List<string>() { "✉️Кол-во непрочитанных сообщений" };
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, "Вы вышли в меню",  cancellationToken, message);
             }
             catch (Exception ex)
             {
@@ -53,8 +61,19 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
-                message.ClearMenu = true;
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);               
+                KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
+                if(info.Value.Login != null)
+                {
+                    List<string> ids = new List<string>() { "Меню" };
+                    message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);
+                }
+                else
+                {
+                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);
+                }
+                
+                             
                 botClient.RegisterNextStep(update.Message.Chat.Id, Login);
             }
             catch (Exception ex)
@@ -103,31 +122,26 @@ namespace WpfElmaBot.Service.Commands
 
                 botClient.GetCacheData(update.GetChatId()).Value.AuthToken = authorization.AuthToken;
                 botClient.GetCacheData(update.GetChatId()).Value.SessionToken = authorization.SessionToken;
+                botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
+                botClient.RegisterNextStep(update.Message.Chat.Id, Menu);
 
-            
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken, message);
             }
             catch (Exception ex)
             {
                 if(ex.Message== "Request failed with status code BadRequest")
                 {
-                    OptionTelegramMessage auth = new OptionTelegramMessage();
-                    auth.MenuReplyKeyboardMarkup =
-                         new string[][]
-                         {
-                        new string[] {"Авторизация"}
-                         };
-                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken, auth);
+                    OptionTelegramMessage message = new OptionTelegramMessage();
+                    List<string> ids = new List<string>() { "🔑Авторизация" };
+                    message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken, message);
                 }
                 if(ex.Message ==  "Request failed with status code InternalServerError")
                 {
-                    OptionTelegramMessage auth = new OptionTelegramMessage();
-                    auth.MenuReplyKeyboardMarkup =
-                         new string[][]
-                         {
-                        new string[] {"Авторизация"}
-                         };
-                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken, auth);
+                    OptionTelegramMessage message = new OptionTelegramMessage();
+                    List<string> ids = new List<string>() { "🔑Авторизация" };
+                    message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken, message);
                 }
                 else
                 {
@@ -138,19 +152,27 @@ namespace WpfElmaBot.Service.Commands
             }
            
         }
-        public async Task Menu(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task CountUnread(ITelegramBotClient botClient,Update update,CancellationToken cancellationToken)
         {
-            try
-            {
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы вышли в меню", cancellationToken);
+            botClient.ClearStepUser(update.Message.Chat.Id);
+            KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
+            var Count = await ELMA.getInstance().GetCountunread<int>(info.Value.AuthToken, info.Value.SessionToken);
+            await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Непрочитанных сообщений: {Count}", cancellationToken);
 
-            }
-            catch (Exception ex)
-            {
-                MainWindowViewModel.Log.Error("Ошибка на шаге меню | " + ex);
-
-            }
         }
+        //public async Task Menu(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        //{
+        //    try
+        //    {
+        //        await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы вышли в меню", cancellationToken);
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MainWindowViewModel.Log.Error("Ошибка на шаге меню | " + ex);
+
+        //    }
+        //}
         
 
     }

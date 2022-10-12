@@ -47,7 +47,7 @@ namespace WpfElmaBot.Service
             return data;
 
         }
-        private async Task<T> GetRequest<T>(string path, string authToken = null, string sessionToken = null)
+        private async Task<T> GetRequest<T>(string path, string authToken = null, string sessionToken =null)
         {
             var request = new RestRequest(path);
             AddHeadersELMA(request, authToken, sessionToken);
@@ -56,7 +56,7 @@ namespace WpfElmaBot.Service
             return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
         }
 
-        public async Task<T> PostRequest<T>(string path, string body, string authToken = null, string sessionToken = null)
+        public async Task<T> PostRequest<T>(string path, string body, string authToken = null , string sessionToken = null )
         {
 
             var request = new RestRequest($"{FullURL}" + path);
@@ -69,7 +69,7 @@ namespace WpfElmaBot.Service
 
         }      
 
-        public async Task<List<T>> GetEntity<T>(string path, string authToken = null, string sessionToken = null) where T : Entity
+        public async Task<List<T>> GetEntity<T>(string path, string authToken , string sessionToken ) where T : Entity
         {
             //await UpdateToken<Auth>(authToken
             var request = new RestRequest($"{FullURL}" + path);
@@ -79,7 +79,7 @@ namespace WpfElmaBot.Service
             return JsonConvert.DeserializeObject<List<T>>(response.Content.Trim(new char[] { '\uFEFF' }));
 
         }
-        public async Task<T> GetEntityById<T>(string typeUId, long entityId, string authToken = null, string sessionToken = null) where T : Entity
+        public async Task<T> GetEntityById<T>(string typeUId, long entityId, string authToken, string sessionToken ) where T : Entity
         {
             
             var obj = await GetRequest<T>($"{FullURL}Entity/Load?type={typeUId}&id={entityId}",authToken,sessionToken);
@@ -177,6 +177,11 @@ namespace WpfElmaBot.Service
                 }
 
             }
+        }
+        public async Task<T> GetCountunread<T>(string authToken,string sessionToken)
+        {
+            var obj = await GetRequest<T>($"{FullURLpublic}EleWise.ELMA.Messages/MessageFeed/Posts/Feed/UnreadCount", authToken, sessionToken);
+            return obj;
         }
     }
 }

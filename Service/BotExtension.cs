@@ -103,5 +103,7 @@ namespace WpfElmaBot.Service
         
         public string AuthToken { get; set; }
         public string SessionToken { get; set; }
+
+        public bool StatusAuth { get; set; }
     }
 }

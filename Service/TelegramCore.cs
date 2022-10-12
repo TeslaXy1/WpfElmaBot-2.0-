@@ -6,6 +6,7 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
+using WpfElmaBot_2._0_;
 using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot.Service
@@ -13,7 +14,7 @@ namespace WpfElmaBot.Service
     public class TelegramCore
     {
         public static string TelegramToken;
-        public ITelegramBotClient bot = new TelegramBotClient(TelegramToken);
+        public  ITelegramBotClient bot = new TelegramBotClient(TelegramToken);
         public static CancellationToken cancellation;
 
 
@@ -35,11 +36,13 @@ namespace WpfElmaBot.Service
 
 
         //public static CancellationTokenSource _cancelTokenSource;
-        public void Start()
+        public async void Start()
         {
             var cts = new CancellationTokenSource();
             var cancellationToken = cts.Token;
             cancellation = cts.Token;
+            await ClearUpdates();
+
             var receiverOptions = new ReceiverOptions
             {
                 AllowedUpdates = { }, // receive all update types
@@ -50,7 +53,6 @@ namespace WpfElmaBot.Service
                 receiverOptions,
                 cancellationToken
             );
-            ClearUpdates();
             vm.Status = $"{DateTime.Now.ToString("g")}-Бот запущен";
             //_cancelTokenSource = new CancellationTokenSource();
         }
@@ -64,6 +66,7 @@ namespace WpfElmaBot.Service
 
                     new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
                     vm.Consol += $"{DateTime.UtcNow.ToString("G")}: Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ") \n" + Environment.NewLine;
+                  
                 }
                 if(update.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)
                 {

@@ -13,9 +13,10 @@ namespace WpfElmaBot.Service
     {
         #region кнопки
         public const string AUTH = "/authorization";
-        public const string AUTHInline = "Авторизация";
-        public const string MENU = "/menu";
+        public const string AUTHInline = "🔑Авторизация";
+        public const string MENU = "Меню";
         public const string START = "/start";
+        public const string CountUnread = "✉️Кол-во непрочитанных сообщений";
 
 
         //public const string 
@@ -39,10 +40,11 @@ namespace WpfElmaBot.Service
         /// </summary>
         public void RegisterUserCommand()
         {
-            _commands.Add(START, CommonCommand.GetMyId);
+            _commands.Add(START, CommonCommand.Start);
             _commands.Add(AUTH, CommonCommand.Auth);
             _commands.Add(MENU, CommonCommand.Menu);
             _commands.Add(AUTHInline, CommonCommand.Auth);
+            _commands.Add(CountUnread, CommonCommand.CountUnread);
         }
 
         /// <summary>
@@ -56,10 +58,10 @@ namespace WpfElmaBot.Service
                 var userId = update.GetChatId();
                 if (botClient.HasStep(userId))
                 {
-                    if (command == MENU || command == START)
+                    if (command== MENU || command == START)
                     {
                         botClient.ClearStepUser(userId);
-
+                        ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
                         return;
                     }
                     await botClient.GetStepOrNull(userId).Value(botClient, update, cancellationToken);

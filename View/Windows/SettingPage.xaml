@@ -81,8 +81,8 @@
                         <ColumnDefinition Width="200"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Margin="10 0 0 0" Grid.Column="0" Text="Передача пароля в кавычках" Foreground="Gray"/>
-                    <ToggleButton HorizontalAlignment="Left" Cursor="Hand" Grid.Column="1" ToolTip="На разных системах может потребоваться передавать пароль с кавычками. Включите данный пункт если программа многократно выдает ошибку 'Неверный логин или пароль' " IsChecked="{Binding IsPass}" Margin="12 0 8 0"  />
+                    <TextBlock Margin="10 0 0 0" Grid.Column="0" Text="Версия Community" Foreground="Gray" ToolTip="На разных системах может потребоваться передавать пароль в кавычках. Включите данный пункт если программа многократно выдает ошибку 'Неверный логин или пароль' "/>
+                    <ToggleButton HorizontalAlignment="Left" Cursor="Hand" Grid.Column="1" ToolTip="На разных системах может потребоваться передавать пароль в кавычках. Включите данный пункт если программа многократно выдает ошибку 'Неверный логин или пароль' " IsChecked="{Binding IsPass}" Margin="12 0 8 0"  />
 
                 </Grid>
 

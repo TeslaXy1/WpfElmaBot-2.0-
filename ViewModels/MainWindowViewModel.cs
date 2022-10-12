@@ -207,6 +207,9 @@ namespace WpfElmaBot_2._0_.ViewModels
                 TelegramCore.TelegramToken = ConfigurationManager.AppSettings.Get("TokenTelegram");
                 Common.IsPass = ConfigurationManager.AppSettings.Get("IsPass");
 
+
+                
+
                 string[] AdressPort = ELMA.FullURL.Split('/');
                 string[] adresport = AdressPort[2].Split(':');
                 Adress = adresport[0];

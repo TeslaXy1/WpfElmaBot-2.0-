@@ -18,12 +18,14 @@ using System.IO;
 using WpfElmaBot_2._0_.Models.EntityPack;
 using System.Configuration;
 using WpfElmaBot.Service.Commands;
+using System.Net.Http;
 
 namespace WpfElmaBot_2._0_.ViewModels
 {
     internal class SettingPageViewModel : ViewModel
     {
         private static RestClient RestClient { get; set; }
+        private static readonly HttpClient client = new HttpClient();
         private static string authToken;
         private static string sessionToken;
         private static Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -224,7 +226,7 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         #region Функции проверки настроек
 
-        private void CheckSetting()
+        private async void  CheckSetting()
         {
             try
             {
@@ -236,23 +238,23 @@ namespace WpfElmaBot_2._0_.ViewModels
                     {
                         bool LoginAndTokenElmma = CheckTokenElmaandLoginPas();
                         if (LoginAndTokenElmma == true)
-                        {
-                            bool sprav = CheckEntity();
-                            if (sprav == true)
+                        {                           
+                            bool IsTypeUid = CheckEnt();                          
+                            if (IsTypeUid == true)
                             {
-                                if(IsPass==true)
+                                if (IsPass == true)
                                 {
                                     config.AppSettings.Settings["IsPass"].Value = "true";
                                 }
                                 else { config.AppSettings.Settings["IsPass"].Value = "false"; }
-                               
+
                                 ConfigurationManager.RefreshSection("appSettings");
                                 config.Save(ConfigurationSaveMode.Modified);
-
                                 Loading = "Hidden";
                                 //ElmaMessages.Start();
                                 MessageBox.Show("Успешно.Настройка завершена. Для применения настроек перезапустите программу.");
-                            }
+                            } 
+                            
                             else { Loading = "Hidden"; MessageBox.Show("Неверный Uid справочника. Настройка не завершена"); }
                         }
                         else { Loading = "Hidden"; MessageBox.Show("Неверный токен Elma или логин с паролем. Настройка не завершена"); }
@@ -263,8 +265,10 @@ namespace WpfElmaBot_2._0_.ViewModels
             }
             catch (Exception ex)
             {
+                Loading = "Hidden";
+                MessageBox.Show("Что-то пошло не так. Попробуйте еще раз.");
                 MainWindowViewModel.Log.Error("Ошибка проверки настроек | " + ex);
-                Loading = "Hidden"; 
+                
             }
         }
 
@@ -385,12 +389,45 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         }
 
-        private bool CheckEntity()
+        private bool CheckEnt()
+        {
+
+            try
+            {
+                HttpWebRequest taskReq1 = (HttpWebRequest)WebRequest.Create(String.Format($"http://{Adress}:{Port}/API/REST/Entity/Query?type={TypeUid}"));
+                taskReq1.Method = "GET";
+                taskReq1.Headers.Add("AuthToken", authToken);
+                taskReq1.Headers.Add("SessionToken", sessionToken);
+                taskReq1.Timeout = 15000;
+                taskReq1.ContentType = "application/json; charset=utf-8";
+
+
+                var res2 = taskReq1.GetResponse() as HttpWebResponse;
+                var resStream2 = res2.GetResponseStream();
+                var sr2 = new StreamReader(resStream2, Encoding.UTF8);
+
+                ELMA.TypeUid = TypeUid;
+                config.AppSettings.Settings["TypeUid"].Value = TypeUid;
+                ConfigurationManager.RefreshSection("appSettings");
+                config.Save(ConfigurationSaveMode.Modified);
+                return true;
+
+            }
+            catch
+            {
+                return false;
+            }
+            
+
+        }
+
+        private bool  CheckEntity()
         {
             try
             {
-                var entity = new ELMA().GetEntity<EntityMargin>($"Entity/Query?type={TypeUid}", authToken, sessionToken);
-
+                var entity = ELMA.getInstance().GetEntityById<EntityMargin>(TypeUid,0,authToken,sessionToken);
+                
+                
 
                 ELMA.TypeUid = TypeUid;
                 config.AppSettings.Settings["TypeUid"].Value = TypeUid;

@@ -36,7 +36,5 @@ namespace WpfElmaBot_2._0_
                 this.DragMove();
             }
         }
-        
-            
     }
 }
