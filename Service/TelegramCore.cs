@@ -65,7 +65,8 @@ namespace WpfElmaBot.Service
                 {
 
                     new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
-                    vm.Consol += $"{DateTime.UtcNow.ToString("G")}: Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ") \n" + Environment.NewLine;
+                    vm.AttachedPropertyAppend = $"{DateTime.UtcNow.ToString("G")}: Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ") \n" + Environment.NewLine;
+           
                   
                 }
                 if(update.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)

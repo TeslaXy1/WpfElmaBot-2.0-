@@ -1,6 +1,8 @@
 ﻿using NLog;
 using System;
 using System.Configuration;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using WpfElmaBot.Service;
 using WpfElmaBot.Service.Commands;
@@ -25,7 +27,56 @@ namespace WpfElmaBot_2._0_.ViewModels
                     if (instance == null)
                         instance = new MainWindowViewModel();
             return instance;
+
+            
         }
+
+
+
+
+      
+
+
+
+
+        private bool _attachedPropertyClear;
+        private string _attachedPropertyAppend;
+
+        public void CmdAppend(string toAppend)
+        {
+            string toLog = $"{DateTime.Now:HH:mm:ss} - {toAppend}\n";
+
+            // Attached properties only fire on a change. This means it will still work if we publish the same message twice.
+            AttachedPropertyAppend = "";
+            AttachedPropertyAppend = toLog;
+
+            
+        }
+
+        public void CmdClear()
+        {
+            AttachedPropertyClear = false;
+            AttachedPropertyClear = true;
+
+        }
+
+        public bool AttachedPropertyClear
+        {
+            get { return _attachedPropertyClear; }
+            set { _attachedPropertyClear = value; OnPropertyChanged(); }
+        }
+
+        public string AttachedPropertyAppend
+        {
+            get { return _attachedPropertyAppend; }
+            set { _attachedPropertyAppend = value; OnPropertyChanged(); }
+        }
+
+        
+
+
+
+
 
         #region Свойства
 
@@ -50,7 +101,8 @@ namespace WpfElmaBot_2._0_.ViewModels
         public string Consol
         {
             get => _Consol;
-            set => Set(ref _Consol, value);
+            set => Set(ref _Consol, value) ;
+
         }
         #endregion
 

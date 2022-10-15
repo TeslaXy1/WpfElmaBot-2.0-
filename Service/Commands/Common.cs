@@ -61,20 +61,10 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
-                KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
-                if(info.Value.Login != null)
-                {
-                    List<string> ids = new List<string>() { "Меню" };
+                    List<string> ids = new List<string>() { "🔑Авторизация" };
                     message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
-                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);
-                }
-                else
-                {
-                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);
-                }
-                
-                             
-                botClient.RegisterNextStep(update.Message.Chat.Id, Login);
+                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);        
+                    botClient.RegisterNextStep(update.Message.Chat.Id, Login);
             }
             catch (Exception ex)
             {
@@ -100,9 +90,7 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
-                string pass = "";
-                message.ClearMenu = true;
-              
+                string pass = "";             
                 botClient.ClearStepUser(update.Message.Chat.Id);
                 botClient.GetCacheData(update.GetChatId()).Value.Password = update.Message.Text;
                 KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
@@ -124,6 +112,9 @@ namespace WpfElmaBot.Service.Commands
                 botClient.GetCacheData(update.GetChatId()).Value.SessionToken = authorization.SessionToken;
                 botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
                 botClient.RegisterNextStep(update.Message.Chat.Id, Menu);
+
+                List<string> ids = new List<string>() { "Меню" };
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
 
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken, message);
             }
@@ -156,23 +147,20 @@ namespace WpfElmaBot.Service.Commands
         {
             botClient.ClearStepUser(update.Message.Chat.Id);
             KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
-            var Count = await ELMA.getInstance().GetCountunread<int>(info.Value.AuthToken, info.Value.SessionToken);
-            await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Непрочитанных сообщений: {Count}", cancellationToken);
+            if(info.Value.StatusAuth!=false)
+            {
+                var Count = await ELMA.getInstance().GetCountunread<int>(info.Value.AuthToken, info.Value.SessionToken);
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Непрочитанных сообщений: {Count}", cancellationToken);
+            }
+            else
+            {
+                botClient.RegisterNextStep(update.Message.Chat.Id, Start);
+               
+            }
+            
 
         }
-        //public async Task Menu(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        //{
-        //    try
-        //    {
-        //        await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы вышли в меню", cancellationToken);
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MainWindowViewModel.Log.Error("Ошибка на шаге меню | " + ex);
-
-        //    }
-        //}
+       
         
 
     }

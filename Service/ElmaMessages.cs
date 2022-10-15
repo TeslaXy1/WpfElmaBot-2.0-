@@ -8,6 +8,7 @@ using WpfElmaBot.Models;
 using WpfElmaBot.Service;
 using WpfElmaBot.Service.Commands;
 using WpfElmaBot_2._0_.Models.EntityPack;
+using WpfElmaBot_2._0_.Service.Commands;
 using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot_2._0_.Service
@@ -36,7 +37,7 @@ namespace WpfElmaBot_2._0_.Service
         public ElmaMessages(MainWindowViewModel mwvm)
         {
             this.mwvm = mwvm;
-            this.mwvm.Consol = "Здесь будут отображаться сообщения из телеграма\n" + Environment.NewLine;
+            this.mwvm.AttachedPropertyAppend = "Здесь будут отображаться сообщения из телеграма\n" + Environment.NewLine;
             this.mwvm.Error = "Здесь будут отображаться неполадки в работе программы\n" + Environment.NewLine;
 
         }
@@ -111,6 +112,7 @@ namespace WpfElmaBot_2._0_.Service
                     MainWindowViewModel.Log.Error("Ошибка авторизации спарвочника | "+exeption);
                     mwvm.Error += "Неверный логин или пароль" + "\n";
                     Auth = false;
+                    
 
                 }
                 if (Auth == true)
@@ -149,22 +151,22 @@ namespace WpfElmaBot_2._0_.Service
                         catch (Exception exception)
                         {
 
-                            MainWindowViewModel.Log.Error("Ошибка авторизации спарвочника | " + exception);
+                            KeyValuePair<long, UserCache> Check = BotExtension.GetCacheData(TelegramCore.getInstance().bot, idTelegram);
+                            TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.StatusAuth = false;
+                            TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.AuthToken = null;
+                            TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.SessionToken = null;
+                            MainWindowViewModel.Log.Error("Ошибка обновления токена | " + exception);
                             await UpdateStatus(userElma, idTelegram, authToken, sessionToken, loginUser, idMessage, entityId);
-                            if (status != "false")
+                            if (status == "true")
                             {
-                                KeyValuePair<long, UserCache> Check = BotExtension.GetCacheData(TelegramCore.getInstance().bot, idTelegram);
-                                if(Check.Value.StatusAuth == true)
-                                {
-                                    message.MenuReplyKeyboardMarkup =
-                                     new string[][]
-                                     {
-                                        new string[] {"Авторизация"}
-                                     };
+                                
+                                
+                                    List<string> ids = new List<string>() { "🔑Авторизация" };
+                                    message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
 
                                     await route.MessageCommand.Send(TelegramCore.getInstance().bot, chatId: idTelegram, msg: "Вам нужно авторизоваться", TelegramCore.cancellation, message);
-                                    TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.StatusAuth = false;
-                                }
+                                    
+                                
 
                                 
                             }
@@ -178,7 +180,7 @@ namespace WpfElmaBot_2._0_.Service
             catch(Exception exception)
             {
 
-                if(exception.StackTrace.Contains("ElmaMessages.cs:строка 118") || exception.StackTrace.Contains("ElmaMessages.cs:line 118"))
+                if(exception.StackTrace.Contains("ElmaMessages.cs:строка 120") || exception.StackTrace.Contains("ElmaMessages.cs:line 120"))
                 {
                     mwvm.Error += "Неверный TypeUid справочника";
                     Stop();
@@ -208,7 +210,7 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch(Exception ex)
             {
-                if(ex.Message == "Error converting value \"76\" to type 'WpfElmaBot.Models.Entity'. Path '', line 1, position 4.")
+                if(ex.Message.Contains("Error converting value to type 'WpfElmaBot.Models.Entity'. Path '', line 1, position 4."))
                 {
 
                 }
