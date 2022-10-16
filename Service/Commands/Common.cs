@@ -154,7 +154,8 @@ namespace WpfElmaBot.Service.Commands
             }
             else
             {
-                botClient.RegisterNextStep(update.Message.Chat.Id, Start);
+                botClient.ClearStepUser(update.Message.Chat.Id);
+                await Start(botClient, update, cancellationToken);
                
             }
             

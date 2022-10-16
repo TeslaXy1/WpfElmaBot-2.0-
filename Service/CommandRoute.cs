@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using WpfElmaBot.Service.Commands;
 
 namespace WpfElmaBot.Service
 {
@@ -61,7 +62,8 @@ namespace WpfElmaBot.Service
                     if (command== MENU || command == START)
                     {
                         botClient.ClearStepUser(userId);
-                        ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
+                        //ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
+                        await new Common(this).Menu(botClient, update, cancellationToken);
                         return;
                     }
                     await botClient.GetStepOrNull(userId).Value(botClient, update, cancellationToken);

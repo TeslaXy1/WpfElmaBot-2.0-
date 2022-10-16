@@ -34,45 +34,16 @@ namespace WpfElmaBot_2._0_.ViewModels
 
 
 
-      
 
 
 
 
-        private bool _attachedPropertyClear;
-        private string _attachedPropertyAppend;
 
-        public void CmdAppend(string toAppend)
-        {
-            string toLog = $"{DateTime.Now:HH:mm:ss} - {toAppend}\n";
 
-            // Attached properties only fire on a change. This means it will still work if we publish the same message twice.
-            AttachedPropertyAppend = "";
-            AttachedPropertyAppend = toLog;
-
-            
-        }
-
-        public void CmdClear()
-        {
-            AttachedPropertyClear = false;
-            AttachedPropertyClear = true;
-
-        }
-
-        public bool AttachedPropertyClear
-        {
-            get { return _attachedPropertyClear; }
-            set { _attachedPropertyClear = value; OnPropertyChanged(); }
-        }
-
-        public string AttachedPropertyAppend
-        {
-            get { return _attachedPropertyAppend; }
-            set { _attachedPropertyAppend = value; OnPropertyChanged(); }
-        }
 
         
+
+
 
 
 
@@ -93,16 +64,21 @@ namespace WpfElmaBot_2._0_.ViewModels
         }
         #endregion
 
-        #region Консоль 
-        private string _Consol;
-        /// <summary>
-        /// свойство консоли
-        /// </summary>
-        public string Consol
+        #region  Свойство очистки консоли
+        private bool _attachedPropertyClear;
+        public bool AttachedPropertyClear
         {
-            get => _Consol;
-            set => Set(ref _Consol, value) ;
+            get { return _attachedPropertyClear; }
+            set { _attachedPropertyClear = value; OnPropertyChanged(); }
+        }
+        #endregion
 
+        #region  Свойство консоли
+        private string _attachedPropertyAppend;
+        public string AttachedPropertyAppend
+        {
+            get { return _attachedPropertyAppend; }
+            set { _attachedPropertyAppend = value; OnPropertyChanged(); }
         }
         #endregion
 
@@ -118,15 +94,21 @@ namespace WpfElmaBot_2._0_.ViewModels
         }
         #endregion
 
-        #region Консоль неполадок 
-        private string _error;
-        /// <summary>
-        /// свойство консоли
-        /// </summary>
-        public string Error
+        #region  Свойство очистки консоли ошибок
+        private bool _attachedPropertyClearError;
+        public bool AttachedPropertyClearError
         {
-            get => _error;
-            set => Set(ref _error, value);
+            get { return _attachedPropertyClearError; }
+            set { _attachedPropertyClearError = value; OnPropertyChanged(); }
+        }
+        #endregion
+
+        #region  Свойство консоли ошибок
+        private string _attachedPropertyAppendError;
+        public string AttachedPropertyAppendError
+        {
+            get { return _attachedPropertyAppendError; }
+            set { _attachedPropertyAppendError = value; OnPropertyChanged(); }
         }
         #endregion
 

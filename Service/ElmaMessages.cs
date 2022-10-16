@@ -38,7 +38,7 @@ namespace WpfElmaBot_2._0_.Service
         {
             this.mwvm = mwvm;
             this.mwvm.AttachedPropertyAppend = "Здесь будут отображаться сообщения из телеграма\n" + Environment.NewLine;
-            this.mwvm.Error = "Здесь будут отображаться неполадки в работе программы\n" + Environment.NewLine;
+            this.mwvm.AttachedPropertyAppendError = "Здесь будут отображаться неполадки в работе программы\n" + Environment.NewLine;
 
         }
 
@@ -110,7 +110,7 @@ namespace WpfElmaBot_2._0_.Service
                     Stop();
                     MessageBox.Show("Неверный логин или пароль");
                     MainWindowViewModel.Log.Error("Ошибка авторизации спарвочника | "+exeption);
-                    mwvm.Error += "Неверный логин или пароль" + "\n";
+                    mwvm.AttachedPropertyAppendError += "Неверный логин или пароль" + "\n";
                     Auth = false;
                     
 
@@ -136,6 +136,7 @@ namespace WpfElmaBot_2._0_.Service
                             {
                                 TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.AuthToken = chekToken.AuthToken;
                                 TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.SessionToken = chekToken.SessionToken;
+                                TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.StatusAuth = true;
                                 var message = await ELMA.getInstance().GetUnreadMessage<MessegesOtvet>(chekToken.AuthToken, chekToken.SessionToken);
                                 GenerateMsg(message, loginUser);
                             }
@@ -163,12 +164,12 @@ namespace WpfElmaBot_2._0_.Service
                                 
                                     List<string> ids = new List<string>() { "🔑Авторизация" };
                                     message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
-
+                                    TelegramCore.getInstance().bot.ClearStepUser(idTelegram);                               
                                     await route.MessageCommand.Send(TelegramCore.getInstance().bot, chatId: idTelegram, msg: "Вам нужно авторизоваться", TelegramCore.cancellation, message);
-                                    
-                                
 
-                                
+
+
+
                             }
 
                         }
@@ -182,7 +183,7 @@ namespace WpfElmaBot_2._0_.Service
 
                 if(exception.StackTrace.Contains("ElmaMessages.cs:строка 120") || exception.StackTrace.Contains("ElmaMessages.cs:line 120"))
                 {
-                    mwvm.Error += "Неверный TypeUid справочника";
+                    mwvm.AttachedPropertyAppendError += "Неверный TypeUid справочника";
                     Stop();
                 }
                 
@@ -287,7 +288,7 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch(Exception ex)
             {
-                mwvm.Error = $"{DateTime.Now.ToString("g")} неверный логин или пароль для справочника";
+                mwvm.AttachedPropertyAppendError = $"{DateTime.Now.ToString("g")} неверный логин или пароль для справочника";
                 MainWindowViewModel.Log.Error("Ошибка авторизации спарвочника | " + ex);
             }
         }

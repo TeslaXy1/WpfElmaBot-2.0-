@@ -251,7 +251,6 @@ namespace WpfElmaBot_2._0_.ViewModels
                                 ConfigurationManager.RefreshSection("appSettings");
                                 config.Save(ConfigurationSaveMode.Modified);
                                 Loading = "Hidden";
-                                //ElmaMessages.Start();
                                 MessageBox.Show("Успешно.Настройка завершена. Для применения настроек перезапустите программу.");
                             } 
                             

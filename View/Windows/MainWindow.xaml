@@ -6,7 +6,6 @@
         xmlns:vm ="clr-namespace:WpfElmaBot_2._0_.ViewModels"
         xmlns:local="clr-namespace:WpfElmaBot_2._0_" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:Icon ="http://metro.mahapps.com/winfx/xaml/iconpacks" 
-        xmlns:uc ="clr-namespace:WpfElmaBot_2._0_.UserControls"
         mc:Ignorable="d"
         Height="450" Width="810" AllowsTransparency="true" WindowStyle="None" WindowStartupLocation="CenterScreen" Background="Transparent" WindowState="Normal" ResizeMode="NoResize">
     <Window.DataContext>
@@ -70,13 +69,10 @@
 
 
 
-            <TextBox  Grid.Column="1" Grid.RowSpan="2" vm:TextBoxApppendBehaviors.AppendText="{Binding AttachedPropertyAppend}" vm:TextBoxClearBehavior.TextBoxClear="{Binding AttachedPropertyClear}" Margin="10 60 0 0"    Visibility="{Binding VisibleConsol}" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"    Panel.ZIndex="1" IsReadOnly="True" IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630" VerticalScrollBarVisibility="Visible" Cursor="Arrow"/>
-            <!--<uc:UserTextBox appendText="{Binding Consol}" Grid.Column="1" Grid.Row="0" Height="340" Width="630"/>-->
-
-            <!--<TextBox  IsReadOnly="True" Foreground="Gainsboro" FontSize="13" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" attachedBehaviors:TextBoxApppendBehaviors.AppendText="{Binding LogBoxViewModel.AttachedPropertyAppend}"  attachedBehaviors:TextBoxClearBehavior.TextBoxClear="{Binding LogBoxViewModel.AttachedPropertyClear}"   TextWrapping="Wrap"/>-->
+            <TextBox  Grid.Column="1" Grid.RowSpan="2"  Margin="10 60 0 0"  vm:TextBoxApppendBehaviors.AppendText="{Binding AttachedPropertyAppend}"      vm:TextBoxClearBehavior.TextBoxClear="{Binding AttachedPropertyClear}"       Visibility="{Binding VisibleConsol}"    Panel.ZIndex="1"   IsReadOnly="True"   IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630"  Cursor="Arrow"/>
 
 
-            <TextBox x:Name="txtError"  Margin="10 60 0 0" Text="{Binding Error}"   Visibility="{Binding VisibleError}"     Grid.Column="1" Grid.RowSpan="2" Panel.ZIndex="1" IsEnabled="False" IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630" VerticalScrollBarVisibility="Visible" Cursor="Arrow"/>
+            <TextBox  Grid.Column="1" Grid.RowSpan="2"  Margin="10 60 0 0"  vm:TextBoxApppendBehaviors.AppendText="{Binding AttachedPropertyAppendError}" vm:TextBoxClearBehavior.TextBoxClear="{Binding AttachedPropertyClearError}"  Visibility="{Binding VisibleError}"     Panel.ZIndex="1"   IsEnabled="False"   IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630"  Cursor="Arrow"/>
 
            
 
