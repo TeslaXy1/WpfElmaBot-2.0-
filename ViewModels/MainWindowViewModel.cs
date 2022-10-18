@@ -250,8 +250,9 @@ namespace WpfElmaBot_2._0_.ViewModels
                 Port = adresport[1];
 
                 Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\nАдрес: {Adress}\nПорт: {Port}\n-----------------------------------------------------------");
-                new TelegramCore(this).Start();
                 new ElmaMessages(this).Start();
+                new TelegramCore(this).Start();
+                
             }
             catch(Exception ex)
             {

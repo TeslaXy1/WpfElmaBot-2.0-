@@ -53,7 +53,7 @@ namespace WpfElmaBot.Service.Commands
             }
             catch (Exception ex)
             {
-                MainWindowViewModel.Log.Error("Ошибка на шаге /start | " + ex);
+                MainWindowViewModel.Log.Error("Ошибка на шаге menu | " + ex);
             }
         }
 
@@ -96,15 +96,15 @@ namespace WpfElmaBot.Service.Commands
                 KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
                 if(IsPass=="true")
                 {
-                     pass = $@"""{loginpas.Value.Login}""";
+                     pass = $@"""{loginpas.Value.Password}""";
 
                 }
                 else
                 {
-                    pass = loginpas.Value.Login;
+                    pass = loginpas.Value.Password;
                 }
-                string path = $"Authorization/LoginWith?username={pass}";
-                var authorization =  await elma.PostRequest<Auth>(path, loginpas.Value.Password);
+                string path = $"Authorization/LoginWith?username={loginpas.Value.Login}";
+                var authorization =  await elma.PostRequest<Auth>(path, pass);
                 elma.AuthorizationUser(authorization, Convert.ToInt64(update.Message.Chat.Id),loginpas.Value.Login);
                 
 

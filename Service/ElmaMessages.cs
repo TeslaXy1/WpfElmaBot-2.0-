@@ -138,7 +138,7 @@ namespace WpfElmaBot_2._0_.Service
                                 TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.SessionToken = chekToken.SessionToken;
                                 TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.StatusAuth = true;
                                 var message = await ELMA.getInstance().GetUnreadMessage<MessegesOtvet>(chekToken.AuthToken, chekToken.SessionToken);
-                                GenerateMsg(message, loginUser);
+                                GenerateMsg(message, loginUser, chekToken.AuthToken, chekToken.SessionToken);
                             }
                             catch (Exception exception)
                             {
@@ -152,10 +152,6 @@ namespace WpfElmaBot_2._0_.Service
                         catch (Exception exception)
                         {
 
-                            KeyValuePair<long, UserCache> Check = BotExtension.GetCacheData(TelegramCore.getInstance().bot, idTelegram);
-                            TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.StatusAuth = false;
-                            TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.AuthToken = null;
-                            TelegramCore.getInstance().bot.GetCacheData(idTelegram).Value.SessionToken = null;
                             MainWindowViewModel.Log.Error("Ошибка обновления токена | " + exception);
                             await UpdateStatus(userElma, idTelegram, authToken, sessionToken, loginUser, idMessage, entityId);
                             if (status == "true")
@@ -196,6 +192,10 @@ namespace WpfElmaBot_2._0_.Service
         {
             try
             {
+                TelegramCore.getInstance().bot.GetCacheData(idtelegram).Value.StatusAuth = false;
+                TelegramCore.getInstance().bot.GetCacheData(idtelegram).Value.AuthToken = null;
+                TelegramCore.getInstance().bot.GetCacheData(idtelegram).Value.SessionToken = null;
+
                 var body = new EntityMargin()
                 {
                     IdUserElma = userelma,
@@ -211,7 +211,7 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch(Exception ex)
             {
-                if(ex.Message.Contains("Error converting value to type 'WpfElmaBot.Models.Entity'. Path '', line 1, position 4."))
+                if(ex.Message.Contains("line 1, position 4."))
                 {
 
                 }
@@ -246,8 +246,10 @@ namespace WpfElmaBot_2._0_.Service
             }
             catch (Exception ex)
             {
-                if(ex.Message == "Error converting value \"76\" to type 'WpfElmaBot.Models.Entity'. Path '', line 1, position 4.")
-                { }
+                if(ex.Message.Contains( "line 1, position 4."))
+                {
+                    
+                }
                 else
                 {
                     MainWindowViewModel.Log.Error("Ошибка обновения последнего сообщения в справочнике | " + ex);
@@ -258,7 +260,7 @@ namespace WpfElmaBot_2._0_.Service
             
 
         }
-        public async Task GenerateMsg(MessegesOtvet message,string user)
+        public async Task GenerateMsg(MessegesOtvet message,string user,string authtoken,string sessiontoken)
         {
             try
             { 
@@ -269,13 +271,25 @@ namespace WpfElmaBot_2._0_.Service
                     {
                         if (idMessage != message.Data[j].Id && idMessage < message.Data[j].Id)
                         {
-
+                            List<TaskBase> taskbase = new List<TaskBase>();
                             bool isTask = message.Data[j].ObjectGroupText == "Задача";
+                            if(isTask)
+                            {
+                                var eqlQuery = $"Id={message.Data[j].ActionObjectId}";
+                                taskbase = await ELMA.getInstance().GetEntity<TaskBase>($"Entity/Query?type={ELMA.TypeUidTaskBase}&limit=1&q={eqlQuery}", authtoken, sessiontoken);
+                                //var entity = await ELMA.getInstance().GetEntityById<TaskBase>(ELMA.TypeUidTaskBase,message.Data[j].Id, authtoken, sessiontoken);
+                            }
+
+                            string priority="";
                             bool hasText = message.Data[j].Text == null;
-                            string msg = (isTask ? "Новая задача📋" : "Новое сообщение📋");
+                            if (taskbase[0].Priority == "1") { priority = "📕"; }
+                            if (taskbase[0].Priority == "2") { priority = "📒";  }
+                            if (taskbase[0].Priority == "3") { priority = "📗 "; }
+                            string msg = (isTask ? $"{priority}Новая задача📋" : "Новое сообщение📋");
                             msg += "\n";
                             msg += "👨‍💻 " + message.Data[j].CreationAuthor.Name;
                             msg += "\n";
+                            msg += (isTask ? $"⏰Сроки \n{taskbase[0].StartDate}-\n{taskbase[0].EndDate}\n": "");
                             msg += "📃 " + message.Data[j].Subject;
                             msg += (hasText ? "" : "\n📝" + message.Data[j].Text);
                             await route.MessageCommand.Send(TelegramCore.getInstance().bot, chatId: idTelegram, msg: msg, TelegramCore.cancellation);

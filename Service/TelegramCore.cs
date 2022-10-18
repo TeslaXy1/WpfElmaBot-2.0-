@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -38,23 +39,31 @@ namespace WpfElmaBot.Service
         //public static CancellationTokenSource _cancelTokenSource;
         public async void Start()
         {
-            var cts = new CancellationTokenSource();
-            var cancellationToken = cts.Token;
-            cancellation = cts.Token;
-            await ClearUpdates();
-
-            var receiverOptions = new ReceiverOptions
+            try
             {
-                AllowedUpdates = { }, // receive all update types
-            };
-            bot.StartReceiving(
-                HandleUpdateAsync,
-                HandleErrorAsync,
-                receiverOptions,
-                cancellationToken
-            );
-            vm.Status = $"{DateTime.Now.ToString("g")}-Бот запущен";
-            //_cancelTokenSource = new CancellationTokenSource();
+                var cts = new CancellationTokenSource();
+                var cancellationToken = cts.Token;
+                cancellation = cts.Token;
+                await ClearUpdates();
+
+                var receiverOptions = new ReceiverOptions
+                {
+                    AllowedUpdates = { }, // receive all update types
+                };
+                bot.StartReceiving(
+                    HandleUpdateAsync,
+                    HandleErrorAsync,
+                    receiverOptions,
+                    cancellationToken
+                );
+                vm.Status = $"{DateTime.Now.ToString("g")}-Бот запущен";
+                //_cancelTokenSource = new CancellationTokenSource();
+            }
+            catch(Telegram.Bot.Exceptions.RequestException)
+            {
+                vm.AttachedPropertyAppendError = "Нет подключения к интернету";
+                MessageBox.Show("Убедитесь, что есть подключение к интернету");
+            }
         }
                
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)

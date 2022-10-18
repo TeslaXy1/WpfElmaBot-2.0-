@@ -24,7 +24,10 @@ namespace WpfElmaBot.Service
         public static string appToken { get; set; } 
         public static string TypeUid { get; set; } 
         public static string login { get; set; } 
-        public static string password { get; set; } 
+        public static string password { get; set; }
+
+        public static string TypeUidTaskBase = "f532ef81-20e1-467d-89a4-940c57a609bc";
+
 
 
         public ELMA()
@@ -71,7 +74,6 @@ namespace WpfElmaBot.Service
 
         public async Task<List<T>> GetEntity<T>(string path, string authToken , string sessionToken ) where T : Entity
         {
-            //await UpdateToken<Auth>(authToken
             var request = new RestRequest($"{FullURL}" + path);
             AddHeadersELMA(request, authToken, sessionToken);
             var test = RestClient.BuildUri(request);
