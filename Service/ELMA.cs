@@ -2,6 +2,7 @@
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace WpfElmaBot.Service
         }
 
         
-        public static ELMA getInstance()
+        public static ELMA getElma()
         {
             if (elma == null)
                 elma = new ELMA();
@@ -117,12 +118,12 @@ namespace WpfElmaBot.Service
 
 
         }
-        public async void AuthorizationUser(Auth authorization, long chatid,string login)
+        public async void AuthorizationUser(Auth authorization, long chatid, string login)
         {
             var eqlQuery = $"IdTelegram={chatid}";
             var limit = "1";
             var offset = "0";
-            var sort = ""; 
+            var sort = "";
             var filterProviderUid = "";
             var filterProviderData = "";
             var filter = "";
@@ -130,7 +131,7 @@ namespace WpfElmaBot.Service
             var message = await GetUnreadMessage<MessegesOtvet>(authorization.AuthToken, authorization.SessionToken);
             var entity = await GetEntity<Entity>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", authorization.AuthToken, authorization.SessionToken);
 
-            if (entity.Count==0)
+            if (entity.Count == 0)
             {
                 try
                 {
@@ -142,17 +143,27 @@ namespace WpfElmaBot.Service
                         SessionToken = authorization.SessionToken,
                         AuthorizationUser = "true",
                         Login = login,
-                        IdLastSms = Convert.ToString(message.Data[0].Id)
+                        IdLastSms = Convert.ToString(message.Data.Select(x => x.Id).Max()),
+                        TimeMessage = DateTime.Now
                     };
                     string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
                     var entityPost = await PostRequest<Entity>($"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
                 }
                 catch (Exception ex)
                 {
-                    MainWindowViewModel.Log.Error("Ошибка добавления записи в справочник | " + ex);
-               
+
+                    if (ex.Message.Contains("line 1, position 4."))
+                    {
+
+                    }
+                    else
+                    {
+                        MainWindowViewModel.Log.Error("Ошибка добавления записи в справочник | " + ex);
+                    }
+
+
                 }
-                
+
             }
             else
             {
@@ -166,7 +177,8 @@ namespace WpfElmaBot.Service
                         SessionToken = authorization.SessionToken,
                         AuthorizationUser = "true",
                         Login = login,
-                        IdLastSms = Convert.ToString(message.Data[0].Id)
+                        IdLastSms = Convert.ToString(message.Data.Select(x => x.Id).Max()),
+                        TimeMessage = DateTime.UtcNow
                     };
                     string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
                     var entityPost = await PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}", jsonBody, authorization.AuthToken, authorization.SessionToken);
@@ -175,11 +187,28 @@ namespace WpfElmaBot.Service
                 {
                     MainWindowViewModel.Log.Error("Ошибка обновления записи в справочник | " + ex);
 
-                    
+
                 }
 
             }
+
+
+            var comm = new Dictionary<long, long>();
+            for (int j = message.Data.Count - 1; j > -1; j--)
+            {
+                long max = 0;
+                if (message.Data[j].LastComments.Data.Count!=0)
+                {
+                    max = message.Data[j].LastComments.Data.Select(x => x.Id).Max();
+                }
+                
+                comm.Add(message.Data[j].Id, max);
+
+            }
+            TelegramCore.getTelegramCore().bot.GetCacheData(chatid).Value.LastCommentId = comm;
+
         }
+        
         public async Task<T> GetCountunread<T>(string authToken,string sessionToken)
         {
             var obj = await GetRequest<T>($"{FullURLpublic}EleWise.ELMA.Messages/MessageFeed/Posts/Feed/UnreadCount", authToken, sessionToken);

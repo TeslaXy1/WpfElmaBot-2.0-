@@ -16,8 +16,10 @@ namespace WpfElmaBot.Service.Commands
     public class Common
     {
         private CommandRoute route;
+        public static Common instance;
         public static string IsPass;
-        
+        private MainWindowViewModel vm;
+
         private ELMA elma = new ELMA();
         public OptionTelegramMessage message = new OptionTelegramMessage();
 
@@ -27,9 +29,18 @@ namespace WpfElmaBot.Service.Commands
             this.route = route;
             
         }
-
+        public Common(MainWindowViewModel vm)
+        {
+              this.vm = vm;
+        }
+        public static Common GetCommon()
+        {
+            if (instance == null)
+                instance = new Common(new CommandRoute());
+            return instance;
+        }
         
-        public async Task Start(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task Start(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)//шаг старт
         {
             try
             {
@@ -43,11 +54,11 @@ namespace WpfElmaBot.Service.Commands
             }
         }
 
-        public async Task Menu(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task Menu(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken) //шаг меню
         {
             try
             {
-                List<string> ids = new List<string>() { "✉️Кол-во непрочитанных сообщений" };
+                List<string> ids = new List<string>() { "Статус"}; //"✉️Кол-во непрочитанных сообщений" ,
                 message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, "Вы вышли в меню",  cancellationToken, message);
             }
@@ -57,7 +68,7 @@ namespace WpfElmaBot.Service.Commands
             }
         }
 
-        public async Task Auth(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task Auth(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)//запрос на авторизацию
         {
             try
             {
@@ -65,14 +76,15 @@ namespace WpfElmaBot.Service.Commands
                     message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
                     await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);        
                     botClient.RegisterNextStep(update.Message.Chat.Id, Login);
+                    
             }
             catch (Exception ex)
             {
-                MainWindowViewModel.Log.Error("Ошибка на шаге /логина | " + ex);
+                MainWindowViewModel.Log.Error("Ошибка на шаге ввода логина | " + ex);
             }
         }
 
-        public async Task Login(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task Login(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)//ввод логина
         {
             try
             {
@@ -82,11 +94,11 @@ namespace WpfElmaBot.Service.Commands
             }
             catch (Exception ex)
             {
-                MainWindowViewModel.Log.Error("Ошибка на шаге пароля | " + ex);
+                MainWindowViewModel.Log.Error("Ошибка на шаге ввода пароля | " + ex);
             }
         }
       
-        public async Task LoginPasswordHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task LoginPasswordHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)//ввод пароля и авторизация
         {
             try
             {
@@ -94,7 +106,7 @@ namespace WpfElmaBot.Service.Commands
                 botClient.ClearStepUser(update.Message.Chat.Id);
                 botClient.GetCacheData(update.GetChatId()).Value.Password = update.Message.Text;
                 KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
-                if(IsPass=="true")
+                if(IsPass=="false") //условие на предачу пароля в кавычках или без
                 {
                      pass = $@"""{loginpas.Value.Password}""";
 
@@ -106,8 +118,8 @@ namespace WpfElmaBot.Service.Commands
                 string path = $"Authorization/LoginWith?username={loginpas.Value.Login}";
                 var authorization =  await elma.PostRequest<Auth>(path, pass);
                 elma.AuthorizationUser(authorization, Convert.ToInt64(update.Message.Chat.Id),loginpas.Value.Login);
-                
 
+               
                 botClient.GetCacheData(update.GetChatId()).Value.AuthToken = authorization.AuthToken;
                 botClient.GetCacheData(update.GetChatId()).Value.SessionToken = authorization.SessionToken;
                 botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
@@ -143,13 +155,13 @@ namespace WpfElmaBot.Service.Commands
             }
            
         }
-        public async Task CountUnread(ITelegramBotClient botClient,Update update,CancellationToken cancellationToken)
+        public async Task CountUnread(ITelegramBotClient botClient,Update update,CancellationToken cancellationToken)//Получить количество непрочитанных сообщений
         {
             botClient.ClearStepUser(update.Message.Chat.Id);
             KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
             if(info.Value.StatusAuth!=false)
             {
-                var Count = await ELMA.getInstance().GetCountunread<int>(info.Value.AuthToken, info.Value.SessionToken);
+                var Count = await ELMA.getElma().GetCountunread<int>(info.Value.AuthToken, info.Value.SessionToken);
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Непрочитанных сообщений: {Count}", cancellationToken);
             }
             else
@@ -162,6 +174,25 @@ namespace WpfElmaBot.Service.Commands
 
         }
        
+        public async Task Status(ITelegramBotClient botClient,Update update ,CancellationToken cancellationToken)//шаг статус
+        {
+            try
+            {
+                botClient.ClearStepUser(update.Message.Chat.Id);
+                KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
+                var updateToken = await elma.UpdateToken<Auth>(info.Value.AuthToken);
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы авторизованы", cancellationToken);
+
+            }
+            catch (Exception ex)
+            {
+                List<string> ids = new List<string>() { "🔑Авторизация" };
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken, message);
+            }
+
+
+        }
         
 
     }

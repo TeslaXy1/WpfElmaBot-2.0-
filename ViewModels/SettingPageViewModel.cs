@@ -32,7 +32,7 @@ namespace WpfElmaBot_2._0_.ViewModels
 
 
         private static SettingPage instance;
-        public static SettingPage getInstance()
+        public static SettingPage getSettingPage()
         {
             if (instance == null)
                 instance = new SettingPage();
@@ -184,7 +184,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         private void OnBackCommandExecuted(object p)
         {
             
-            getInstance().Hide();
+            getSettingPage().Hide();
 
         }
         private bool CanBackCommandExecute(object p) => true;
@@ -230,23 +230,23 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             try
             {
-                bool botToken = CheckTokenBot();
+                bool botToken = CheckTokenBot();//проверка токена бота
                 if (botToken == true)
                 {
-                    bool adresPort = CheckAdresPort();
+                    bool adresPort = CheckAdresPort();//проверка адреса и порта
                     if (adresPort == true)
                     {
-                        bool LoginAndTokenElmma = CheckTokenElmaandLoginPas();
+                        bool LoginAndTokenElmma = CheckTokenElmaandLoginPas();//проверка токена Ельмы, логина и пароля
                         if (LoginAndTokenElmma == true)
                         {                           
-                            bool IsTypeUid = CheckEnt();                          
+                            bool IsTypeUid = CheckEnt();//проверка TypeUid справочника                          
                             if (IsTypeUid == true)
                             {
-                                if (IsPass == true)
+                                if (IsPass == false)
                                 {
-                                    config.AppSettings.Settings["IsPass"].Value = "true";
+                                    config.AppSettings.Settings["IsPass"].Value = "false";
                                 }
-                                else { config.AppSettings.Settings["IsPass"].Value = "false"; }
+                                else { config.AppSettings.Settings["IsPass"].Value = "true";}
 
                                 ConfigurationManager.RefreshSection("appSettings");
                                 config.Save(ConfigurationSaveMode.Modified);
@@ -305,7 +305,7 @@ namespace WpfElmaBot_2._0_.ViewModels
                 req.ContentType = "application/json; charset=utf-8";
 
                 //данные для отправки. используется для передачи пароля. пароль нужно записать вместо пустой строки
-                if(IsPass == false)
+                if(IsPass == true)
                 {
                     sentData = Encoding.UTF8.GetBytes(Password);
                 }
@@ -412,8 +412,9 @@ namespace WpfElmaBot_2._0_.ViewModels
                 return true;
 
             }
-            catch
+            catch(Exception ex)
             {
+                MainWindowViewModel.Log.Error("Ошибка проверки справочника | " + ex);
                 return false;
             }
             
@@ -424,7 +425,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             try
             {
-                var entity = ELMA.getInstance().GetEntityById<EntityMargin>(TypeUid,0,authToken,sessionToken);
+                var entity = ELMA.getElma().GetEntityById<EntityMargin>(TypeUid,0,authToken,sessionToken);
                 
                 
 

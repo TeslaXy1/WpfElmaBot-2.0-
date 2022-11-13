@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WpfElmaBot_2._0_.Models;
 
 namespace WpfElmaBot.Models
 {
@@ -44,12 +45,12 @@ namespace WpfElmaBot.Models
         public string Url { get; set; }
     }
 
-    public class LastComments
+    public class LastComments 
     {
         public object After { get; set; }
         public object Before { get; set; }
         public int Count { get; set; }
-        public List<object> Data { get; set; }
+        public List<Comments> Data { get; set; }
     }
 
     public class ObjectRecipient

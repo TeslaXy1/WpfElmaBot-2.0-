@@ -18,6 +18,7 @@ namespace WpfElmaBot.Service
         public const string MENU = "Меню";
         public const string START = "/start";
         public const string CountUnread = "✉️Кол-во непрочитанных сообщений";
+        public const string Status = "Статус";
 
 
         //public const string 
@@ -46,6 +47,7 @@ namespace WpfElmaBot.Service
             _commands.Add(MENU, CommonCommand.Menu);
             _commands.Add(AUTHInline, CommonCommand.Auth);
             _commands.Add(CountUnread, CommonCommand.CountUnread);
+            _commands.Add(Status, CommonCommand.Status);
         }
 
         /// <summary>

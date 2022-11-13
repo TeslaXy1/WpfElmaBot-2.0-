@@ -21,7 +21,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
         private static MainWindowViewModel instance;
-        public static MainWindowViewModel getInstance()
+        public static MainWindowViewModel getMainWindowVM()
         {
             
                     if (instance == null)
@@ -30,24 +30,6 @@ namespace WpfElmaBot_2._0_.ViewModels
 
             
         }
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
 
         #region Свойства
 
@@ -184,7 +166,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             IsDefaultMain = false;
             IsDefaultError = false;
-            SettingPageViewModel.getInstance().ShowDialog();
+            SettingPageViewModel.getSettingPage().ShowDialog();
         }
         private bool CanSettingBtnCommandExecute(object p) => true;
         #endregion
@@ -242,7 +224,7 @@ namespace WpfElmaBot_2._0_.ViewModels
                 Common.IsPass = ConfigurationManager.AppSettings.Get("IsPass");
 
 
-                
+
 
                 string[] AdressPort = ELMA.FullURL.Split('/');
                 string[] adresport = AdressPort[2].Split(':');

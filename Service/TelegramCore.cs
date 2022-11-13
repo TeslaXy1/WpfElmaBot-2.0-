@@ -7,6 +7,7 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
+using WpfElmaBot.Service.Commands;
 using WpfElmaBot_2._0_;
 using WpfElmaBot_2._0_.ViewModels;
 
@@ -20,7 +21,7 @@ namespace WpfElmaBot.Service
 
 
         private static TelegramCore instance;
-        public static TelegramCore getInstance()
+        public static TelegramCore getTelegramCore()
         {
 
             if (instance == null)
@@ -74,7 +75,7 @@ namespace WpfElmaBot.Service
                 {
 
                     new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
-                    vm.AttachedPropertyAppend = $"{DateTime.UtcNow.ToString("G")}: Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ") \n" + Environment.NewLine;
+                    vm.AttachedPropertyAppend = $"{DateTime.Now.ToString("G")}: Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ") \n" + Environment.NewLine;
            
                   
                 }
