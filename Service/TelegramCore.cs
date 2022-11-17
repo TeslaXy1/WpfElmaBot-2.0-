@@ -21,20 +21,46 @@ namespace WpfElmaBot.Service
 
 
         private static TelegramCore instance;
-        public static TelegramCore getTelegramCore()
+        public static TelegramCore getTelegramCore(MainWindowViewModel vm = null)
         {
 
             if (instance == null)
-                instance = new TelegramCore();
+                instance = new TelegramCore(vm);
             return instance;
         }
 
+        public enum TelegramEvents
+        {
+            Auth,
+            Login,
+            Password,
+            Status
+        }
+
+        public delegate void CommonLog(string message,TelegramEvents events);
+
+        public event CommonLog OnCommonLog;
+        public event CommonLog OnCommonError;
+        public event CommonLog OnCommonStatus;
+
         private MainWindowViewModel vm;
-        public TelegramCore(MainWindowViewModel vm = null)
+        private TelegramCore(MainWindowViewModel vm = null)
         {
             this.vm = vm;
         }
+        public void InvokeCommonStatus(string msg, TelegramEvents events)
+        {
+            OnCommonStatus?.Invoke(msg, events);
+        }
 
+        public void InvokeCommonLog(string msg, TelegramEvents events)
+        {
+            OnCommonLog?.Invoke(msg, events);
+        }
+        public void InvokeCommonError(string msg, TelegramEvents events)
+        {
+            OnCommonError?.Invoke(msg, events);
+        }
 
 
         //public static CancellationTokenSource _cancelTokenSource;
@@ -57,12 +83,14 @@ namespace WpfElmaBot.Service
                     receiverOptions,
                     cancellationToken
                 );
-                vm.Status = $"{DateTime.Now.ToString("g")}-Бот запущен";
+                getTelegramCore().InvokeCommonStatus($"{DateTime.Now.ToString("g")}-Бот запущен", TelegramCore.TelegramEvents.Status);
+                //vm.Status = $"{DateTime.Now.ToString("g")}-Бот запущен";
                 //_cancelTokenSource = new CancellationTokenSource();
             }
             catch(Telegram.Bot.Exceptions.RequestException)
             {
-                vm.AttachedPropertyAppendError = "Нет подключения к интернету";
+                //vm.AttachedPropertyAppendError = "Нет подключения к интернету";
+                getTelegramCore().InvokeCommonError("Нет подключения к интернету", TelegramCore.TelegramEvents.Status);
                 MessageBox.Show("Убедитесь, что есть подключение к интернету");
             }
         }
@@ -74,9 +102,7 @@ namespace WpfElmaBot.Service
                 if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
                 {
 
-                    new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
-                    vm.AttachedPropertyAppend = $"{DateTime.Now.ToString("G")}: Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ") \n" + Environment.NewLine;
-           
+                    new CommandRoute().ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);           
                   
                 }
                 if(update.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery)

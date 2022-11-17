@@ -233,8 +233,15 @@ namespace WpfElmaBot_2._0_.ViewModels
 
                 Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\nАдрес: {Adress}\nПорт: {Port}\n-----------------------------------------------------------");
                 new ElmaMessages(this).Start();
-                new TelegramCore(this).Start();
-                
+                var telegram = TelegramCore.getTelegramCore(this);
+                telegram.Start();
+                telegram.OnCommonLog += Telegram_OnCommonLog;
+                telegram.OnCommonError += Telegram_OnCommonError;
+                telegram.OnCommonStatus += Telegram_OnCommonStatus;
+                AttachedPropertyAppend = "Здесь будут отображаться сообщения из телеграма\n" + Environment.NewLine;
+                AttachedPropertyAppendError = "Здесь будут отображаться неполадки в работе программы\n" + Environment.NewLine;
+
+
             }
             catch(Exception ex)
             {
@@ -245,5 +252,21 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         }
 
+        private void Telegram_OnCommonStatus(string message, TelegramCore.TelegramEvents events)
+        {
+            Status = message;
+        }
+
+        private void Telegram_OnCommonError(string message, TelegramCore.TelegramEvents events)
+        {
+            AttachedPropertyAppendError = $"{DateTime.Now.ToString("G")}: {message} \n" + Environment.NewLine;
+        }
+
+        private void Telegram_OnCommonLog(string message, TelegramCore.TelegramEvents events)
+        {
+
+            AttachedPropertyAppend = $"{DateTime.Now.ToString("G")}: {message} \n" + Environment.NewLine;
+
+        }
     }
 }

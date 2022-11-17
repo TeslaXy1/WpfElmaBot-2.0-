@@ -14,7 +14,7 @@ namespace WpfElmaBot.Service
     {
         #region кнопки
         public const string AUTH = "/authorization";
-        public const string AUTHInline = "🔑Авторизация";
+        public const string AUTHMENU = "🔑Авторизация";
         public const string MENU = "Меню";
         public const string START = "/start";
         public const string CountUnread = "✉️Кол-во непрочитанных сообщений";
@@ -45,7 +45,7 @@ namespace WpfElmaBot.Service
             _commands.Add(START, CommonCommand.Start);
             _commands.Add(AUTH, CommonCommand.Auth);
             _commands.Add(MENU, CommonCommand.Menu);
-            _commands.Add(AUTHInline, CommonCommand.Auth);
+            _commands.Add(AUTHMENU, CommonCommand.Auth);
             _commands.Add(CountUnread, CommonCommand.CountUnread);
             _commands.Add(Status, CommonCommand.Status);
         }

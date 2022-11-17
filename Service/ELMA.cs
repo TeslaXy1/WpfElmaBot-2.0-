@@ -101,6 +101,17 @@ namespace WpfElmaBot.Service
 
 
         }
+        public  Task<T> GetAllMessage<T>(string authtoken, string sessionToken) where T : MessegesOtvet
+        {
+
+            string AFTER = "";
+            string BEFORE = "";
+            var LIMIT = "200";
+            var obj =  GetRequest<T>($"{FullURLpublic}EleWise.ELMA.Messages/MessageFeed/Posts/Feed?after={AFTER}&before={BEFORE}&limit={LIMIT}", authtoken, sessionToken);
+            return obj;
+
+
+        }
 
         private static void AddHeadersELMA(RestRequest request, string authToken = null, string sessionToken = null)
         {
@@ -131,66 +142,81 @@ namespace WpfElmaBot.Service
             var message = await GetUnreadMessage<MessegesOtvet>(authorization.AuthToken, authorization.SessionToken);
             var entity = await GetEntity<Entity>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", authorization.AuthToken, authorization.SessionToken);
 
-            if (entity.Count == 0)
-            {
+            //if (entity.Count == 0)
+            //{
                 try
                 {
-                    var body = new EntityMargin()
+                    var  body = new EntityMargin()
                     {
-                        IdUserElma = authorization.CurrentUserId,
-                        IdTelegram = Convert.ToString(chatid),
-                        AuthToken = authorization.AuthToken,
-                        SessionToken = authorization.SessionToken,
-                        AuthorizationUser = "true",
-                        Login = login,
-                        IdLastSms = Convert.ToString(message.Data.Select(x => x.Id).Max()),
-                        TimeMessage = DateTime.Now
+                            IdUserElma = authorization.CurrentUserId,
+                            IdTelegram = Convert.ToString(chatid),
+                            AuthToken = authorization.AuthToken,
+                            SessionToken = authorization.SessionToken,
+                            AuthorizationUser = "true",
+                            Login = login,
+                            //IdLastSms = Convert.ToString(message.Count>0? message.Data.Select(x => x.Id).Max(): 0),
+                            TimeMessage = DateTime.UtcNow
                     };
+                    
+                    
                     string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
-                    var entityPost = await PostRequest<Entity>($"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
+                    var entityPost = await PostRequest<Entity>(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}"  : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
                 }
                 catch (Exception ex)
                 {
 
                     if (ex.Message.Contains("line 1, position 4."))
                     {
+                        MainWindowViewModel.Log.Error("Успешное добавление/обновление записи в справочник | " + ex);
 
                     }
                     else
                     {
-                        MainWindowViewModel.Log.Error("Ошибка добавления записи в справочник | " + ex);
+                        MainWindowViewModel.Log.Error("Ошибка добавления/обновления записи в справочник | " + ex);
+                        TelegramCore.getTelegramCore().InvokeCommonError("Ошибка добавления записи в справочник", TelegramCore.TelegramEvents.Password);
                     }
-
-
-                }
-
-            }
-            else
-            {
-                try
-                {
-                    var body = new EntityMargin()
-                    {
-                        IdUserElma = authorization.CurrentUserId,
-                        IdTelegram = Convert.ToString(chatid),
-                        AuthToken = authorization.AuthToken,
-                        SessionToken = authorization.SessionToken,
-                        AuthorizationUser = "true",
-                        Login = login,
-                        IdLastSms = Convert.ToString(message.Data.Select(x => x.Id).Max()),
-                        TimeMessage = DateTime.UtcNow
-                    };
-                    string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
-                    var entityPost = await PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}", jsonBody, authorization.AuthToken, authorization.SessionToken);
-                }
-                catch (Exception ex)
-                {
-                    MainWindowViewModel.Log.Error("Ошибка обновления записи в справочник | " + ex);
-
+                    
+                   
 
                 }
 
-            }
+            //}
+            //else
+            //{
+            //    try
+            //    {
+            //        var body = new EntityMargin()
+            //        {
+            //            IdUserElma = authorization.CurrentUserId,
+            //            IdTelegram = Convert.ToString(chatid),
+            //            AuthToken = authorization.AuthToken,
+            //            SessionToken = authorization.SessionToken,
+            //            AuthorizationUser = "true",
+            //            Login = login,
+            //            IdLastSms = Convert.ToString(message.Count > 0 ? message.Data.Select(x => x.Id).Max() : 0),
+            //            TimeMessage = DateTime.UtcNow
+            //        };
+            //        string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
+            //        var entityPost = await PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}", jsonBody, authorization.AuthToken, authorization.SessionToken);
+            //    }
+            //    catch (Exception ex)
+            //    {
+
+            //        if (ex.Message.Contains("line 1, position 4."))
+            //        {
+            //            MainWindowViewModel.Log.Error("Успешное обновление записи в справочник | " + ex);
+            //        }
+            //        else
+            //        {
+            //            MainWindowViewModel.Log.Error("Ошибка обновления записи в справочник | " + ex);
+            //            TelegramCore.getTelegramCore().InvokeCommonError("Ошибка обновления записи в справочник", TelegramCore.TelegramEvents.Password);
+            //        }
+                    
+
+            //    }
+               
+
+            //}
 
 
             var comm = new Dictionary<long, long>();
