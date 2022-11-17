@@ -141,9 +141,6 @@ namespace WpfElmaBot.Service
 
             var message = await GetUnreadMessage<MessegesOtvet>(authorization.AuthToken, authorization.SessionToken);
             var entity = await GetEntity<Entity>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", authorization.AuthToken, authorization.SessionToken);
-
-            //if (entity.Count == 0)
-            //{
                 try
                 {
                     var  body = new EntityMargin()
@@ -179,45 +176,6 @@ namespace WpfElmaBot.Service
                    
 
                 }
-
-            //}
-            //else
-            //{
-            //    try
-            //    {
-            //        var body = new EntityMargin()
-            //        {
-            //            IdUserElma = authorization.CurrentUserId,
-            //            IdTelegram = Convert.ToString(chatid),
-            //            AuthToken = authorization.AuthToken,
-            //            SessionToken = authorization.SessionToken,
-            //            AuthorizationUser = "true",
-            //            Login = login,
-            //            IdLastSms = Convert.ToString(message.Count > 0 ? message.Data.Select(x => x.Id).Max() : 0),
-            //            TimeMessage = DateTime.UtcNow
-            //        };
-            //        string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
-            //        var entityPost = await PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}", jsonBody, authorization.AuthToken, authorization.SessionToken);
-            //    }
-            //    catch (Exception ex)
-            //    {
-
-            //        if (ex.Message.Contains("line 1, position 4."))
-            //        {
-            //            MainWindowViewModel.Log.Error("Успешное обновление записи в справочник | " + ex);
-            //        }
-            //        else
-            //        {
-            //            MainWindowViewModel.Log.Error("Ошибка обновления записи в справочник | " + ex);
-            //            TelegramCore.getTelegramCore().InvokeCommonError("Ошибка обновления записи в справочник", TelegramCore.TelegramEvents.Password);
-            //        }
-                    
-
-            //    }
-               
-
-            //}
-
 
             var comm = new Dictionary<long, long>();
             for (int j = message.Data.Count - 1; j > -1; j--)

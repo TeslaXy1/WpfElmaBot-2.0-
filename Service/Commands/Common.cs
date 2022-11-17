@@ -142,14 +142,7 @@ namespace WpfElmaBot.Service.Commands
             }
             catch (Exception ex)
             {
-                if(ex.Message== "Request failed with status code BadRequest")
-                {
-                    OptionTelegramMessage message = new OptionTelegramMessage();
-                    List<string> ids = new List<string>() { "🔑Авторизация" };
-                    message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
-                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken, message);
-                }
-                if(ex.Message ==  "Request failed with status code InternalServerError")
+                if(ex.Message.Contains("Request failed"))
                 {
                     OptionTelegramMessage message = new OptionTelegramMessage();
                     List<string> ids = new List<string>() { "🔑Авторизация" };
@@ -194,8 +187,7 @@ namespace WpfElmaBot.Service.Commands
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
 
                 botClient.ClearStepUser(update.Message.Chat.Id);
-                KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
-                var updateToken = await elma.UpdateToken<Auth>(info.Value.AuthToken);
+                var updateToken = await elma.UpdateToken<Auth>(botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
 
 
                 botClient.GetCacheData(update.GetChatId()).Value.AuthToken = updateToken.AuthToken;

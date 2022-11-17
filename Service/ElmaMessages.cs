@@ -21,17 +21,6 @@ namespace WpfElmaBot_2._0_.Service
 
         private static string authSprav;
         private static string sessionSprav;
-
-        //private static string userElma;
-        //private static long idTelegram;
-        //private static string authToken;
-        //private static string sessionToken;
-        //private static int idMessage;
-        //private static string status;
-        //private static string loginUser;
-        //private static DateTime timeMessage;
-        //private static int entityId;
-
         public static string priority = "";
 
 
@@ -78,6 +67,7 @@ namespace WpfElmaBot_2._0_.Service
         {
             _cancelTokenSource?.Cancel();
             _cancelTokenSource = null;
+            TelegramCore.getTelegramCore().InvokeCommonStatus($"{DateTime.Now.ToString("g")}-Бот остановлен", TelegramCore.TelegramEvents.Status);
         }
         public  async Task ProcessingMessages() //функция обработки сообщений
         {
@@ -88,22 +78,11 @@ namespace WpfElmaBot_2._0_.Service
                 await Task.Delay(TimeSpan.FromSeconds(wait));
                 try
                 {
-                    //if(Common.IsPass=="false")
-                    //{
-                        
+
                         var authEntity = await AuthEntity(ELMA.login, Common.IsPass=="false"? $@"""{ELMA.password}""" : ELMA.password);
                         authSprav = authEntity.AuthToken;
                         sessionSprav = authEntity.SessionToken;
-                        
-
-                    //}
-                    //else
-                    //{
-                    //    var authEntity = await AuthEntity(ELMA.login, ELMA.password);
-                    //    authSprav = authEntity.AuthToken;
-                    //    sessionSprav = authEntity.SessionToken;
-                    //}
-                    Auth = true;
+                        Auth = true;
                     
                 }
                 catch(Exception exeption)
@@ -123,15 +102,7 @@ namespace WpfElmaBot_2._0_.Service
                     for (int i = 0; i < entity.Count; i++)
                     {
 
-                        //userElma        = entity[i].IdUserElma;//id user elma
-                        //idTelegram      = Convert.ToInt64(entity[i].IdTelegram);//id usesr telegram
-                        //authToken       = entity[i].AuthToken;//authToken
-                        //sessionToken    = entity[i].SessionToken;//sessiaToken                   
-                        ////idMessage       =  Convert.ToInt32(entity[i].IdLastSms); //id last sms
-                        //status          = Convert.ToString(entity[i].AuthorizationUser); //Статус авторизации
-                        //loginUser       = entity[i].Login;
-                        //entityId        = Convert.ToInt32(entity[i].Id);// уникальный идентификатор записи в справочнике
-                        //timeMessage     = entity[i].TimeMessage;
+                  
                         try
                         {
                             var chekToken = await ELMA.getElma().UpdateToken<Auth>(entity[i].AuthToken); //обновления токена пользователя
@@ -150,7 +121,7 @@ namespace WpfElmaBot_2._0_.Service
                                
                                 await GenerateDictionary(entity[i], allMessages);
                                 await GenerateMsg(entity[i], allMessages, entity[i].Login, chekToken.AuthToken, chekToken.SessionToken, entity[i].TimeMessage);
-                                await GenerateComment(allMessages, entity[i].Login, chekToken.AuthToken, chekToken.SessionToken, Convert.ToInt64(entity[i].IdTelegram));
+                                await GenerateComment(allMessages, entity[i].Login, Convert.ToInt64(entity[i].IdTelegram));
                             }
                             catch (Exception exception)
                             {
@@ -165,24 +136,8 @@ namespace WpfElmaBot_2._0_.Service
                         catch (Exception exception)
                         {
                             
-                            KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(TelegramCore.getTelegramCore().bot, Convert.ToInt64(entity[i].IdTelegram));
-                            //try
-                            //{
-                            //    var chekToken = await ELMA.getElma().UpdateToken<Auth>(info.Value.AuthToken);
+                                KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(TelegramCore.getTelegramCore().bot, Convert.ToInt64(entity[i].IdTelegram));
 
-                            //    TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.AuthToken = chekToken.AuthToken;
-                            //    TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.SessionToken = chekToken.SessionToken;
-                            //    TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.StatusAuth = true;
-
-                            //    //var unreadMessages = await ELMA.getElma().GetUnreadMessage<MessegesOtvet>(chekToken.AuthToken, chekToken.SessionToken);
-                            //    var allMessages = await ELMA.getElma().GetAllMessage<MessegesOtvet>(chekToken.AuthToken, chekToken.SessionToken);
-
-                            //    await GenerateDictionary(entity[i], allMessages);
-                            //    await GenerateMsg(entity[i], allMessages, entity[i].Login, chekToken.AuthToken, chekToken.SessionToken, entity[i].TimeMessage);
-                            //    await GenerateComment(allMessages, entity[i].Login, chekToken.AuthToken, chekToken.SessionToken, Convert.ToInt64(entity[i].IdTelegram));
-                            //}
-                            //catch
-                            //{
                                 MainWindowViewModel.Log.Error("Ошибка обновления токена | " + exception);
                                 await UpdateStatus(entity[i].IdUserElma, Convert.ToInt64(entity[i].IdTelegram), entity[i].AuthToken, entity[i].SessionToken, entity[i].Login, Convert.ToInt32(entity[i].Id), entity[i].TimeMessage);
                                 if (entity[i].AuthorizationUser == "true" || info.Value.StatusAuth == true)
@@ -193,7 +148,7 @@ namespace WpfElmaBot_2._0_.Service
                                     await route.MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: Convert.ToInt64(entity[i].IdTelegram), msg: "Вам нужно авторизоваться", TelegramCore.cancellation, message);
                                     TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.StatusAuth = false;
                                 }
-                            //}
+                           
 
                         }
                     }
@@ -204,7 +159,7 @@ namespace WpfElmaBot_2._0_.Service
             catch(Exception exception)
             {
 
-                if(exception.StackTrace.Contains("ElmaMessages.cs:строка 122") || exception.StackTrace.Contains("ElmaMessages.cs:line 122"))
+                if(exception.StackTrace.Contains("ElmaMessages.cs:строка 111") || exception.StackTrace.Contains("ElmaMessages.cs:line 111"))
                 {
                     TelegramCore.getTelegramCore().InvokeCommonError("Неверный TypeUid справочника", TelegramCore.TelegramEvents.Password);
                     
@@ -247,10 +202,11 @@ namespace WpfElmaBot_2._0_.Service
                 else
                 {
                     MainWindowViewModel.Log.Error("Ошибка обновления статуса в справочнике | " + ex);
+                    TelegramCore.getTelegramCore().InvokeCommonError($"Ошибка обновления статуса", TelegramCore.TelegramEvents.Password);
                 }
 
                 
-                //TelegramCore.getTelegramCore().InvokeCommonError($"Ошибка обновления статуса {userElma}", TelegramCore.TelegramEvents.Password);
+                
 
             }
 
@@ -393,7 +349,7 @@ namespace WpfElmaBot_2._0_.Service
                 MainWindowViewModel.Log.Error($"Ошибка генерации  сообщения для {entity.Login}| " + ex) ;
             }
         }
-        public async Task GenerateComment(MessegesOtvet message,string user,string authToken,string sessionToken,long idTelegram)
+        public async Task GenerateComment(MessegesOtvet message,string user,long idTelegram)
         {
             KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(TelegramCore.getTelegramCore().bot, idTelegram);
             if (message != null)
