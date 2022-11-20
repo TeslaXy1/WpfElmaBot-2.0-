@@ -74,7 +74,7 @@ namespace WpfElmaBot_2._0_.Service
             try
             {
                 bool Auth;
-                var wait = 5;
+                int wait = 5;
                 await Task.Delay(TimeSpan.FromSeconds(wait));
                 try
                 {
@@ -105,7 +105,8 @@ namespace WpfElmaBot_2._0_.Service
                   
                         try
                         {
-                            var chekToken = await ELMA.getElma().UpdateToken<Auth>(entity[i].AuthToken); //обновления токена пользователя
+                            // var chekToken = await ELMA.getElma().UpdateToken<Auth>(entity[i].AuthToken); //обновления токена пользователя
+                            var chekToken = await ELMA.getElma().updateTokenAndEntity<Auth>(Convert.ToInt64(entity[i].IdTelegram), entity[i].Login, entity[i].AuthToken, entity[i]);
                             try
                             {
                                  
@@ -120,7 +121,7 @@ namespace WpfElmaBot_2._0_.Service
                                 
                                
                                 await GenerateDictionary(entity[i], allMessages);
-                                await GenerateMsg(entity[i], allMessages, entity[i].Login, chekToken.AuthToken, chekToken.SessionToken, entity[i].TimeMessage);
+                                await GenerateMsg(entity[i], allMessages,  chekToken.AuthToken, chekToken.SessionToken, entity[i].TimeMessage);
                                 await GenerateComment(allMessages, entity[i].Login, Convert.ToInt64(entity[i].IdTelegram));
                             }
                             catch (Exception exception)
@@ -139,14 +140,17 @@ namespace WpfElmaBot_2._0_.Service
                                 KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(TelegramCore.getTelegramCore().bot, Convert.ToInt64(entity[i].IdTelegram));
 
                                 MainWindowViewModel.Log.Error("Ошибка обновления токена | " + exception);
-                                await UpdateStatus(entity[i].IdUserElma, Convert.ToInt64(entity[i].IdTelegram), entity[i].AuthToken, entity[i].SessionToken, entity[i].Login, Convert.ToInt32(entity[i].Id), entity[i].TimeMessage);
+                                
                                 if (entity[i].AuthorizationUser == "true" || info.Value.StatusAuth == true)
                                 {
                                     List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
                                     message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
                                     TelegramCore.getTelegramCore().bot.ClearStepUser(Convert.ToInt64(entity[i].IdTelegram));
                                     await route.MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: Convert.ToInt64(entity[i].IdTelegram), msg: "Вам нужно авторизоваться", TelegramCore.cancellation, message);
+
                                     TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.StatusAuth = false;
+
+                                    await UpdateStatus(entity[i]);
                                 }
                            
 
@@ -171,27 +175,18 @@ namespace WpfElmaBot_2._0_.Service
 
         }
         
-        public static async Task UpdateStatus(string userelma, long idtelegram, string authtoken, string sessiontoken,string login , int identity,DateTime time) //функция обновления статуса авторизации пользователя в справочнике
+        public static async Task UpdateStatus(EntityMargin entity) //функция обновления статуса авторизации пользователя в справочнике
         {
             try
             {
-                TelegramCore.getTelegramCore().bot.GetCacheData(idtelegram).Value.StatusAuth    = false;
-                TelegramCore.getTelegramCore().bot.GetCacheData(idtelegram).Value.AuthToken     = null;
-                TelegramCore.getTelegramCore().bot.GetCacheData(idtelegram).Value.SessionToken  = null;
+                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.StatusAuth    = false;
+                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.AuthToken     = null;
+                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.SessionToken  = null;
 
-                var body = new EntityMargin()
-                {
-                    IdUserElma          = userelma,
-                    IdTelegram          = Convert.ToString(idtelegram),
-                    AuthToken           = authtoken,
-                    SessionToken        = sessiontoken,
-                    AuthorizationUser   = "false",
-                    Login               = login,
-                    //IdLastSms           = Convert.ToString(idmessage),
-                    TimeMessage         = DateTime.Now
-                };
-                string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
-                var entity = await ELMA.getElma().PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{identity}", jsonBody, authSprav, sessionSprav);
+                entity.AuthorizationUser = "false";
+              
+                string jsonBody     = System.Text.Json.JsonSerializer.Serialize(entity);
+                var updateEntity    = await ELMA.getElma().PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
             }
             catch(Exception ex)
             {
@@ -212,24 +207,16 @@ namespace WpfElmaBot_2._0_.Service
 
         }
 
-        public static async Task UpdateMessage(string userelma, long idtelegram, string authtoken, string sessiontoken, string login, int maxIdMes, int identity,DateTime time) //функция обновления последнего сообщения в справочнике
+        public static async Task UpdateMessage(EntityMargin entity,DateTime time) //функция обновления последнего сообщения в справочнике
         {
 
             try
             {
-                var body = new EntityMargin()
-                {
-                    IdUserElma          = userelma,
-                    IdTelegram          = Convert.ToString(idtelegram),
-                    AuthToken           = authtoken,
-                    SessionToken        = sessiontoken,
-                    AuthorizationUser   = "true",
-                    Login               = login,
-                    //IdLastSms           = Convert.ToString(maxIdMes),
-                    TimeMessage         = time
-                };
-                string jsonBody         = System.Text.Json.JsonSerializer.Serialize(body);
-                var entity              = await ELMA.getElma().PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{identity}", jsonBody, authSprav, sessionSprav);
+
+                entity.TimeMessage = time;
+
+                string jsonBody               = System.Text.Json.JsonSerializer.Serialize(entity);
+                var updateEntity              = await ELMA.getElma().PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
             }
             catch (Exception ex)
             {
@@ -298,16 +285,14 @@ namespace WpfElmaBot_2._0_.Service
                 }
             }
         }
-        public async Task GenerateMsg(EntityMargin entity,MessegesOtvet message,string user,string authtoken,string sessiontoken, DateTime dateMes) //функцию генерации сообщения
+        public async Task GenerateMsg(EntityMargin entity,MessegesOtvet message,string authtoken,string sessiontoken, DateTime dateMes) //функцию генерации сообщения
         {
             try
             {
-                int maxIdMes = message.Data.Count >0 ? message.Data.Select(x => x.Id).Max(): 0; //последнее сообщение
                 if (message != null)
                 {
                     for (int IdMes = message.Data.Count - 1; IdMes > -1; IdMes--)
                     {                    
-                        //idMessage != message.Data[IdMes].Id && idMessage < message.Data[IdMes].Id ||
                         if (message.Data[IdMes].CreationDate > dateMes && message.Data[IdMes].IsRead == false)
                         {
 
@@ -335,7 +320,8 @@ namespace WpfElmaBot_2._0_.Service
 
                             await route.MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: Convert.ToInt64(entity.IdTelegram), msg: msg, TelegramCore.cancellation);
                             MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Сообщение {message.Data[IdMes].Id} отправлено пользователю {entity.Login}");
-                            await UpdateMessage(entity.IdUserElma, Convert.ToInt64(entity.IdTelegram), authtoken, sessiontoken, entity.Login, maxIdMes, Convert.ToInt32(entity.Id), message.Data[IdMes].CreationDate);
+
+                            await UpdateMessage(entity, message.Data[IdMes].CreationDate);
                         }
 
                     }
@@ -396,6 +382,14 @@ namespace WpfElmaBot_2._0_.Service
         {
             var authEntity = await ELMA.getElma().PostRequest<Auth>($"Authorization/LoginWith?username={login}", password);
             return authEntity;
+        }
+
+        public static async Task UpdateTokenAndEntity(string authToken)
+        {
+            var update = await ELMA.getElma().UpdateToken<Auth>(authToken);
+
+            //var updateEntity = await ELMA.getElma().AuthorizationUser(update,)
+
         }
 
 

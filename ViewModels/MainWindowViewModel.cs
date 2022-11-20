@@ -213,7 +213,7 @@ namespace WpfElmaBot_2._0_.ViewModels
                 CloseAppCommand = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
                 #endregion
 
-
+                #region загрузка данных из конфига
                 ELMA.appToken = ConfigurationManager.AppSettings.Get("TokenElma");
                 ELMA.FullURL = ConfigurationManager.AppSettings.Get("FullURL"); ;
                 ELMA.FullURLpublic = ConfigurationManager.AppSettings.Get("FullURLPublic");
@@ -222,6 +222,7 @@ namespace WpfElmaBot_2._0_.ViewModels
                 ELMA.TypeUid = ConfigurationManager.AppSettings.Get("TypeUid");
                 TelegramCore.TelegramToken = ConfigurationManager.AppSettings.Get("TokenTelegram");
                 Common.IsPass = ConfigurationManager.AppSettings.Get("IsPass");
+                #endregion
 
 
 
@@ -233,11 +234,20 @@ namespace WpfElmaBot_2._0_.ViewModels
 
                 Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\nАдрес: {Adress}\nПорт: {Port}\n-----------------------------------------------------------");
                 new ElmaMessages(this).Start();
+
+
+                //var authEntity = await AuthEntity(ELMA.login, Common.IsPass == "false" ? $@"""{ELMA.password}""" : ELMA.password);
+
+
+
+
+
                 var telegram = TelegramCore.getTelegramCore(this);
                 telegram.Start();
                 telegram.OnCommonLog += Telegram_OnCommonLog;
                 telegram.OnCommonError += Telegram_OnCommonError;
                 telegram.OnCommonStatus += Telegram_OnCommonStatus;
+
                 AttachedPropertyAppend = "Здесь будут отображаться сообщения из телеграма\n" + Environment.NewLine;
                 AttachedPropertyAppendError = "Здесь будут отображаться неполадки в работе программы\n" + Environment.NewLine;
 

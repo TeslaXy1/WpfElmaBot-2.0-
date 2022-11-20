@@ -31,7 +31,7 @@ namespace WpfElmaBot.Service
 
 
 
-        public ELMA()
+        private ELMA()
         {
             RestClient = new RestClient();
         }
@@ -49,7 +49,7 @@ namespace WpfElmaBot.Service
         {
             var data = await GetRequest<Auth>($"{FullURL}Authorization/CheckToken?token={authtoken}");
             return data;
-
+            
         }
         private async Task<T> GetRequest<T>(string path, string authToken = null, string sessionToken =null)
         {
@@ -129,34 +129,46 @@ namespace WpfElmaBot.Service
 
 
         }
-        public async void AuthorizationUser(Auth authorization, long chatid, string login)
+        public async void AuthorizationUser(Auth authorization, long chatid, string login,EntityMargin entityMargin=null)
         {
-            var eqlQuery = $"IdTelegram={chatid}";
-            var limit = "1";
-            var offset = "0";
-            var sort = "";
-            var filterProviderUid = "";
-            var filterProviderData = "";
-            var filter = "";
+                var eqlQuery = $"IdUserElma={authorization.CurrentUserId}"; //TODO поиск по юзеру эльмы
+                var limit = "1";
+                var offset = "0";
+                var sort = "";
+                var filterProviderUid = "";
+                var filterProviderData = "";
+                var filter = "";
 
-            var message = await GetUnreadMessage<MessegesOtvet>(authorization.AuthToken, authorization.SessionToken);
-            var entity = await GetEntity<Entity>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", authorization.AuthToken, authorization.SessionToken);
+                //var message = await GetUnreadMessage<MessegesOtvet>(authorization.AuthToken, authorization.SessionToken);
+                var entity = await GetEntity<EntityMargin>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", authorization.AuthToken, authorization.SessionToken);
                 try
                 {
-                    var  body = new EntityMargin()
+                    string jsonBody="";
+                    if (entity.Count==0)
                     {
+                        var body = new EntityMargin()
+                        {
                             IdUserElma = authorization.CurrentUserId,
                             IdTelegram = Convert.ToString(chatid),
                             AuthToken = authorization.AuthToken,
                             SessionToken = authorization.SessionToken,
                             AuthorizationUser = "true",
                             Login = login,
-                            //IdLastSms = Convert.ToString(message.Count>0? message.Data.Select(x => x.Id).Max(): 0),
                             TimeMessage = DateTime.UtcNow
-                    };
-                    
-                    
-                    string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
+                        };
+                        jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
+                    }
+                    else
+                    {
+                        if(entityMargin!=null)
+                        {
+                            entityMargin.AuthToken = authorization.AuthToken;
+                            entityMargin.SessionToken = authorization.SessionToken;
+                            entityMargin.IdTelegram = Convert.ToString(chatid);
+                            jsonBody = System.Text.Json.JsonSerializer.Serialize(entityMargin);
+                        }
+                        
+                    }                                                          
                     var entityPost = await PostRequest<Entity>(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}"  : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
                 }
                 catch (Exception ex)
@@ -177,19 +189,19 @@ namespace WpfElmaBot.Service
 
                 }
 
-            var comm = new Dictionary<long, long>();
-            for (int j = message.Data.Count - 1; j > -1; j--)
-            {
-                long max = 0;
-                if (message.Data[j].LastComments.Data.Count!=0)
-                {
-                    max = message.Data[j].LastComments.Data.Select(x => x.Id).Max();
-                }
+            //var comm = new Dictionary<long, long>();
+            //for (int j = message.Data.Count - 1; j > -1; j--)
+            //{
+            //    long max = 0;
+            //    if (message.Data[j].LastComments.Data.Count!=0)
+            //    {
+            //        max = message.Data[j].LastComments.Data.Select(x => x.Id).Max();
+            //    }
                 
-                comm.Add(message.Data[j].Id, max);
+            //    comm.Add(message.Data[j].Id, max);
 
-            }
-            TelegramCore.getTelegramCore().bot.GetCacheData(chatid).Value.LastCommentId = comm;
+            //}
+            //TelegramCore.getTelegramCore().bot.GetCacheData(chatid).Value.LastCommentId = comm;
 
         }
         
@@ -197,6 +209,23 @@ namespace WpfElmaBot.Service
         {
             var obj = await GetRequest<T>($"{FullURLpublic}EleWise.ELMA.Messages/MessageFeed/Posts/Feed/UnreadCount", authToken, sessionToken);
             return obj;
+        }
+
+        public async Task <Auth> updateTokenAndEntity<T>(long chatId,string login, string authToken,EntityMargin entity= null)
+        {
+            if(entity==null)
+            {
+                var update = await getElma().UpdateToken<Auth>(authToken);
+                getElma().AuthorizationUser(update, chatId, login);
+                return update;
+            }
+            else
+            {
+                var update = await getElma().UpdateToken<Auth>(entity.AuthToken);
+                getElma().AuthorizationUser(update, Convert.ToInt64(entity.IdTelegram), entity.Login,entity);
+                return update;
+            }
+            
         }
     }
 }

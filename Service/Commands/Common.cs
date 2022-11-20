@@ -21,7 +21,7 @@ namespace WpfElmaBot.Service.Commands
         public static string IsPass;
         private CommandRoute route;
         public static Common instance;
-        private ELMA elma = new ELMA();
+        private ELMA elma = ELMA.getElma();
         public OptionTelegramMessage message = new OptionTelegramMessage();
 
         
@@ -112,21 +112,18 @@ namespace WpfElmaBot.Service.Commands
                 
                 string msg = $"Получено 'пароль' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
+
                 string pass = "";             
                 botClient.ClearStepUser(update.Message.Chat.Id);
                 botClient.GetCacheData(update.GetChatId()).Value.Password = update.Message.Text;
-                KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
-                if(IsPass=="false") //условие на предачу пароля в кавычках или без
-                {
-                     pass = $@"""{loginpas.Value.Password}""";
 
-                }
-                else
-                {
-                    pass = loginpas.Value.Password;
-                }
+                KeyValuePair<long,UserCache> loginpas= BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
+
+                pass = IsPass=="false"? $@"""{loginpas.Value.Password}""" : loginpas.Value.Password;
+
                 string path = $"Authorization/LoginWith?username={loginpas.Value.Login}";
                 var authorization =  await elma.PostRequest<Auth>(path, pass);
+
                 elma.AuthorizationUser(authorization, Convert.ToInt64(update.Message.Chat.Id),loginpas.Value.Login);
 
                
@@ -187,18 +184,15 @@ namespace WpfElmaBot.Service.Commands
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
 
                 botClient.ClearStepUser(update.Message.Chat.Id);
-                var updateToken = await elma.UpdateToken<Auth>(botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
 
+                //var updateToken = await elma.UpdateToken<Auth>(botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
+              
+                var updateToken = await elma.updateTokenAndEntity<Auth>(Convert.ToInt64(update.Message.Chat.Id), botClient.GetCacheData(update.GetChatId()).Value.Login, botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
 
                 botClient.GetCacheData(update.GetChatId()).Value.AuthToken = updateToken.AuthToken;
                 botClient.GetCacheData(update.GetChatId()).Value.SessionToken = updateToken.SessionToken;
                 botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
 
-                var entity = await ELMA.getElma().GetEntity<EntityMargin>($"Entity/Query?type={ELMA.TypeUid}&IdUserElma={updateToken.CurrentUserId}", updateToken.AuthToken, updateToken.SessionToken);
-                if(entity.Count > 0)
-                {
-                    UpdateToken(updateToken.CurrentUserId, update.Message.Chat.Id, updateToken.AuthToken, updateToken.SessionToken, entity[0].Login, Convert.ToInt32(entity[0].Id));
-                }
 
 
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы авторизованы", cancellationToken);
