@@ -129,9 +129,9 @@ namespace WpfElmaBot.Service
 
 
         }
-        public async void AuthorizationUser(Auth authorization, long chatid, string login,EntityMargin entityMargin=null)
+        public async void AuthorizationUser(Auth authorization, long chatid, string login)
         {
-                var eqlQuery = $"IdUserElma={authorization.CurrentUserId}"; //TODO поиск по юзеру эльмы
+                var eqlQuery = $"IdUserElma={authorization.CurrentUserId}"; 
                 var limit = "1";
                 var offset = "0";
                 var sort = "";
@@ -139,11 +139,11 @@ namespace WpfElmaBot.Service
                 var filterProviderData = "";
                 var filter = "";
 
-                //var message = await GetUnreadMessage<MessegesOtvet>(authorization.AuthToken, authorization.SessionToken);
                 var entity = await GetEntity<EntityMargin>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", authorization.AuthToken, authorization.SessionToken);
                 try
                 {
                     string jsonBody="";
+                   
                     if (entity.Count==0)
                     {
                         var body = new EntityMargin()
@@ -160,14 +160,13 @@ namespace WpfElmaBot.Service
                     }
                     else
                     {
-                        if(entityMargin!=null)
-                        {
-                            entityMargin.AuthToken = authorization.AuthToken;
-                            entityMargin.SessionToken = authorization.SessionToken;
-                            entityMargin.IdTelegram = Convert.ToString(chatid);
-                            jsonBody = System.Text.Json.JsonSerializer.Serialize(entityMargin);
-                        }
-                        
+
+                        entity[0].AuthToken = authorization.AuthToken;
+                        entity[0].SessionToken = authorization.SessionToken;
+                        entity[0].IdTelegram = Convert.ToString(chatid);
+                        entity[0].AuthorizationUser = "true";
+                        jsonBody = System.Text.Json.JsonSerializer.Serialize(entity[0]);
+
                     }                                                          
                     var entityPost = await PostRequest<Entity>(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}"  : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
                 }
@@ -211,21 +210,13 @@ namespace WpfElmaBot.Service
             return obj;
         }
 
-        public async Task <Auth> updateTokenAndEntity<T>(long chatId,string login, string authToken,EntityMargin entity= null)
+        public async Task <Auth> UpdateTokenAndEntity<T>(long chatId,string login, string authToken)
         {
-            if(entity==null)
-            {
+           
                 var update = await getElma().UpdateToken<Auth>(authToken);
                 getElma().AuthorizationUser(update, chatId, login);
                 return update;
-            }
-            else
-            {
-                var update = await getElma().UpdateToken<Auth>(entity.AuthToken);
-                getElma().AuthorizationUser(update, Convert.ToInt64(entity.IdTelegram), entity.Login,entity);
-                return update;
-            }
-            
+                       
         }
     }
 }

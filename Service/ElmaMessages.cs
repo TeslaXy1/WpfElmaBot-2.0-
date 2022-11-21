@@ -106,7 +106,7 @@ namespace WpfElmaBot_2._0_.Service
                         try
                         {
                             // var chekToken = await ELMA.getElma().UpdateToken<Auth>(entity[i].AuthToken); //обновления токена пользователя
-                            var chekToken = await ELMA.getElma().updateTokenAndEntity<Auth>(Convert.ToInt64(entity[i].IdTelegram), entity[i].Login, entity[i].AuthToken, entity[i]);
+                            var chekToken = await ELMA.getElma().UpdateTokenAndEntity<Auth>(Convert.ToInt64(entity[i].IdTelegram), entity[i].Login, entity[i].AuthToken);
                             try
                             {
                                  
@@ -145,6 +145,7 @@ namespace WpfElmaBot_2._0_.Service
                                 {
                                     List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
                                     message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+
                                     TelegramCore.getTelegramCore().bot.ClearStepUser(Convert.ToInt64(entity[i].IdTelegram));
                                     await route.MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: Convert.ToInt64(entity[i].IdTelegram), msg: "Вам нужно авторизоваться", TelegramCore.cancellation, message);
 
@@ -163,7 +164,7 @@ namespace WpfElmaBot_2._0_.Service
             catch(Exception exception)
             {
 
-                if(exception.StackTrace.Contains("ElmaMessages.cs:строка 111") || exception.StackTrace.Contains("ElmaMessages.cs:line 111"))
+                if(exception.StackTrace.Contains("ElmaMessages.cs:строка 101") || exception.StackTrace.Contains("ElmaMessages.cs:line 101"))
                 {
                     TelegramCore.getTelegramCore().InvokeCommonError("Неверный TypeUid справочника", TelegramCore.TelegramEvents.Password);
                     
@@ -383,15 +384,6 @@ namespace WpfElmaBot_2._0_.Service
             var authEntity = await ELMA.getElma().PostRequest<Auth>($"Authorization/LoginWith?username={login}", password);
             return authEntity;
         }
-
-        public static async Task UpdateTokenAndEntity(string authToken)
-        {
-            var update = await ELMA.getElma().UpdateToken<Auth>(authToken);
-
-            //var updateEntity = await ELMA.getElma().AuthorizationUser(update,)
-
-        }
-
 
     }
 }

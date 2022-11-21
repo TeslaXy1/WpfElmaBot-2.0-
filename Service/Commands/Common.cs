@@ -45,8 +45,10 @@ namespace WpfElmaBot.Service.Commands
             {
                 string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
+
                 List<string> ids = new List<string>() { CommandRoute.AUTHMENU};
-                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2,ids ,"");
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1,ids ,"");
+
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken,message);
             }
             catch (Exception ex)
@@ -61,8 +63,10 @@ namespace WpfElmaBot.Service.Commands
             {
                 string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
-                List<string> ids = new List<string>() { CommandRoute.Status}; //"✉️Кол-во непрочитанных сообщений" ,
+
+                List<string> ids = new List<string>() { CommandRoute.Status , CommandRoute.MENU }; //"✉️Кол-во непрочитанных сообщений" ,
                 message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, "Вы вышли в меню",  cancellationToken, message);
             }
             catch (Exception ex)
@@ -77,8 +81,9 @@ namespace WpfElmaBot.Service.Commands
             {
                     string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
                     TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
-                    List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
-                    message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+
+                    message.ClearMenu = true;
+
                     await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);        
                     botClient.RegisterNextStep(update.Message.Chat.Id, Login);
                     
@@ -133,7 +138,9 @@ namespace WpfElmaBot.Service.Commands
                 botClient.RegisterNextStep(update.Message.Chat.Id, Menu);
 
                 List<string> ids = new List<string>() { CommandRoute.MENU };
+                message.ClearMenu = false;
                 message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                
 
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken, message);
             }
@@ -184,10 +191,8 @@ namespace WpfElmaBot.Service.Commands
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
 
                 botClient.ClearStepUser(update.Message.Chat.Id);
-
-                //var updateToken = await elma.UpdateToken<Auth>(botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
-              
-                var updateToken = await elma.updateTokenAndEntity<Auth>(Convert.ToInt64(update.Message.Chat.Id), botClient.GetCacheData(update.GetChatId()).Value.Login, botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
+           
+                var updateToken = await elma.UpdateTokenAndEntity<Auth>(Convert.ToInt64(update.Message.Chat.Id), botClient.GetCacheData(update.GetChatId()).Value.Login, botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
 
                 botClient.GetCacheData(update.GetChatId()).Value.AuthToken = updateToken.AuthToken;
                 botClient.GetCacheData(update.GetChatId()).Value.SessionToken = updateToken.SessionToken;
@@ -202,8 +207,9 @@ namespace WpfElmaBot.Service.Commands
             {
                 List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
                 message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken, message);
-                //MessageBox.Show(ex+"");
+
             }
 
 
