@@ -22,6 +22,7 @@ namespace WpfElmaBot_2._0_.Service
         private static string authSprav;
         private static string sessionSprav;
         public static string priority = "";
+        private static bool FirstLaunch = true;
 
 
         private static CommandRoute route = new CommandRoute();
@@ -73,9 +74,13 @@ namespace WpfElmaBot_2._0_.Service
         {
             try
             {
-                bool Auth;
-                int wait = 5;
-                await Task.Delay(TimeSpan.FromSeconds(wait));
+                bool Auth;              
+                int wait = 10;
+                if(FirstLaunch==true)
+                {
+                    FirstLaunch = false;
+                }
+                else { await Task.Delay(TimeSpan.FromSeconds(wait)); }              
                 try
                 {
 
@@ -164,7 +169,7 @@ namespace WpfElmaBot_2._0_.Service
             catch(Exception exception)
             {
 
-                if(exception.StackTrace.Contains("ElmaMessages.cs:строка 101") || exception.StackTrace.Contains("ElmaMessages.cs:line 101"))
+                if(exception.StackTrace.Contains("ElmaMessages.cs:строка 106") || exception.StackTrace.Contains("ElmaMessages.cs:line 106"))
                 {
                     TelegramCore.getTelegramCore().InvokeCommonError("Неверный TypeUid справочника", TelegramCore.TelegramEvents.Password);
                     
@@ -299,6 +304,7 @@ namespace WpfElmaBot_2._0_.Service
 
                             bool isTask     = message.Data[IdMes].ObjectGroupText == "Задача";
                             bool hasText    = message.Data[IdMes].Text == null;
+                            bool isEvent    = message.Data[IdMes].ObjectGroupText == "Событие в календаре";
 
                             List<TaskBase> taskbase = new List<TaskBase>();
                             if (isTask)
@@ -311,7 +317,7 @@ namespace WpfElmaBot_2._0_.Service
 
                             }
 
-                            string msg = (isTask ? $"{priority}Новая задача" : "Новое сообщение📋");
+                            string msg = (isEvent ? "Новое событие" : (isTask ? $"{priority}Новая задача" : "Новое сообщение📋"));
                             msg += "\n";
                             msg += "👨‍💻 " + message.Data[IdMes].CreationAuthor.Name;
                             msg += "\n";
@@ -354,14 +360,22 @@ namespace WpfElmaBot_2._0_.Service
                                         
                                         TelegramCore.getTelegramCore().bot.GetCacheData(idTelegram).Value.LastCommentId[message.Data[IdMes].Id] = message.Data[IdMes].LastComments.Data[IdComment].Id;
 
-                                        string msg = "Новый комментарий к теме:\n     " + message.Data[IdMes].Subject;
+                                        string msg = "Новый комментарий к теме:\n📃" + message.Data[IdMes].Subject;
                                         msg += "\n";
                                         msg += "👨‍💻" + message.Data[IdMes].CreationAuthor.Name;
                                         msg += "\n";
-                                        msg += "📝" + message.Data[IdMes].LastComments.Data[IdComment].Text;
+                                        if(message.Data[IdMes].LastComments.Data[IdComment].Text == "\r\n")
+                                        {
+                                            msg += "📝" + message.Data[IdMes].LastComments.Data[IdComment].ActionText; //TODO ActionText проверить  найти эмоджи
+                                        }
+                                        else
+                                        {
+                                            msg += "📝" + message.Data[IdMes].LastComments.Data[IdComment].Text;
+                                        }
+                                        
 
                                         await route.MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: idTelegram, msg: msg, TelegramCore.cancellation);
-                                        MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Комментарий {message.Data[IdMes].Id} отправлено пользователю {user}");
+                                        MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Комментарий {message.Data[IdMes].Id} отправлен пользователю {user}");
 
                                     }
                                 }catch(Exception ex)

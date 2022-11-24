@@ -214,37 +214,7 @@ namespace WpfElmaBot.Service.Commands
 
 
         }
-        public static async Task UpdateToken(string userelma, long idtelegram, string authtoken, string sessiontoken, string login,  int identity) //функция обновления статуса авторизации пользователя в справочнике
-        {
-            try
-            {
-                var body = new EntityMargin()
-                {
-                    IdUserElma = userelma,
-                    IdTelegram = Convert.ToString(idtelegram),
-                    AuthToken = authtoken,
-                    SessionToken = sessiontoken,
-                    AuthorizationUser = "true",
-                    Login = login,
-                    //IdLastSms           = Convert.ToString(idmessage),
-                    TimeMessage = DateTime.Now
-                };
-                string jsonBody = System.Text.Json.JsonSerializer.Serialize(body);
-                var entity = await ELMA.getElma().PostRequest<Entity>($"Entity/Update/{ELMA.TypeUid}/{identity}", jsonBody, authtoken, sessiontoken);
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message.Contains("line 1, position 4."))
-                {
-                    MainWindowViewModel.Log.Error("Успешное обновление статуса в справочнике | " + ex);
-                }
-
-                MainWindowViewModel.Log.Error("Ошибка обновления статуса в справочнике | " + ex);
-                //TelegramCore.getTelegramCore().InvokeCommonError($"Ошибка обновления статуса {userElma}", TelegramCore.TelegramEvents.Password);
-
-            }
-
-        }
+       
 
 
     }

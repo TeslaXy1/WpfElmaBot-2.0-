@@ -173,7 +173,7 @@ namespace WpfElmaBot.Service
                 catch (Exception ex)
                 {
 
-                    if (ex.Message.Contains("line 1, position 4."))
+                    if (ex.Message.Contains("Error converting value"))
                     {
                         MainWindowViewModel.Log.Error("Успешное добавление/обновление записи в справочник | " + ex);
 
@@ -181,14 +181,14 @@ namespace WpfElmaBot.Service
                     else
                     {
                         MainWindowViewModel.Log.Error("Ошибка добавления/обновления записи в справочник | " + ex);
-                        TelegramCore.getTelegramCore().InvokeCommonError("Ошибка добавления записи в справочник", TelegramCore.TelegramEvents.Password);
+                        TelegramCore.getTelegramCore().InvokeCommonError("Ошибка добавления/обвноления записи в справочник", TelegramCore.TelegramEvents.Password);
                     }
                     
                    
 
                 }
 
-            //var comm = new Dictionary<long, long>();
+            //var comm = new Dictionary<long, long>()
             //for (int j = message.Data.Count - 1; j > -1; j--)
             //{
             //    long max = 0;
