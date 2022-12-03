@@ -22,9 +22,6 @@ namespace WpfElmaBot.Service.Commands
         private CommandRoute route;
         public static Common instance;
         private ELMA elma = ELMA.getElma();
-        public OptionTelegramMessage message = new OptionTelegramMessage();
-
-        
 
         public Common(CommandRoute route)
         {
@@ -41,19 +38,54 @@ namespace WpfElmaBot.Service.Commands
         
         public async Task Start(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)//шаг старт
         {
+            //try
+            //{
+            //    string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
+            //    TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
+
+            //    List<string> ids = new List<string>() { CommandRoute.AUTHMENU};
+            //    message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1,ids ,"");
+
+            //    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken,message);
+            //}
+            //catch (Exception ex)
+            //{
+            //    MainWindowViewModel.Log.Error("Ошибка на шаге /start | " + ex);
+            //}
+
+
             try
             {
                 string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
 
-                List<string> ids = new List<string>() { CommandRoute.AUTHMENU};
-                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1,ids ,"");
+                botClient.ClearStepUser(update.Message.Chat.Id);
 
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken,message);
+                var updateToken = await elma.UpdateTokenAndEntity<Auth>(Convert.ToInt64(update.Message.Chat.Id), botClient.GetCacheData(update.GetChatId()).Value.Login, botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
+
+                botClient.GetCacheData(update.GetChatId()).Value.AuthToken = updateToken.AuthToken;
+                botClient.GetCacheData(update.GetChatId()).Value.SessionToken = updateToken.SessionToken;
+                botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
+
+                OptionTelegramMessage message = new OptionTelegramMessage();
+                List<string> ids = new List<string>() { CommandRoute.Status, CommandRoute.MENU };
+                message.ClearMenu = false;
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
+
+
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы авторизованы", cancellationToken , message);
+
             }
             catch (Exception ex)
             {
+                OptionTelegramMessage message = new OptionTelegramMessage();
+                List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
+
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken, message);
+
                 MainWindowViewModel.Log.Error("Ошибка на шаге /start | " + ex);
+
             }
         }
 
@@ -64,8 +96,9 @@ namespace WpfElmaBot.Service.Commands
                 string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
 
-                List<string> ids = new List<string>() { CommandRoute.Status , CommandRoute.MENU }; //"✉️Кол-во непрочитанных сообщений" ,
-                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                OptionTelegramMessage message = new OptionTelegramMessage();
+                List<string> ids = new List<string>() { CommandRoute.Status , CommandRoute.MENU }; //
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
 
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, "Вы вышли в меню",  cancellationToken, message);
             }
@@ -82,6 +115,7 @@ namespace WpfElmaBot.Service.Commands
                     string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
                     TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
 
+                    OptionTelegramMessage message = new OptionTelegramMessage();
                     message.ClearMenu = true;
 
                     await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите логин", cancellationToken, message);        
@@ -100,7 +134,9 @@ namespace WpfElmaBot.Service.Commands
             {
                 string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
+
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Введите пароль", cancellationToken);
+
                 botClient.GetCacheData(update.GetChatId()).Value.Login =  update.Message.Text;
                 botClient.RegisterNextStep(update.Message.Chat.Id, LoginPasswordHandler);
             }
@@ -137,9 +173,10 @@ namespace WpfElmaBot.Service.Commands
                 botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
                 botClient.RegisterNextStep(update.Message.Chat.Id, Menu);
 
-                List<string> ids = new List<string>() { CommandRoute.MENU };
+                OptionTelegramMessage message = new OptionTelegramMessage();
+                List<string> ids = new List<string>() { CommandRoute.Status,CommandRoute.MENU };
                 message.ClearMenu = false;
-                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
                 
 
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы успешно авторизованы", cancellationToken, message);
@@ -164,20 +201,29 @@ namespace WpfElmaBot.Service.Commands
         }
         public async Task CountUnread(ITelegramBotClient botClient,Update update,CancellationToken cancellationToken)//Получить количество непрочитанных сообщений
         {
-            string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
-            TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
-            botClient.ClearStepUser(update.Message.Chat.Id);
-            KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
-            if(info.Value.StatusAuth!=false)
+            try
             {
-                var Count = await ELMA.getElma().GetCountunread<int>(info.Value.AuthToken, info.Value.SessionToken);
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Непрочитанных сообщений: {Count}", cancellationToken);
-            }
-            else
-            {
+
+
+                string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
+                TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
                 botClient.ClearStepUser(update.Message.Chat.Id);
-                await Start(botClient, update, cancellationToken);
-               
+                KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(botClient, update.Message.Chat.Id);
+                if (info.Value.StatusAuth != false)
+                {
+                    var Count = await ELMA.getElma().GetCountunread<int>(info.Value.AuthToken, info.Value.SessionToken);
+                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Непрочитанных сообщений: {Count}", cancellationToken);
+                }
+                else
+                {
+                    botClient.ClearStepUser(update.Message.Chat.Id);
+                    await Start(botClient, update, cancellationToken);
+
+                }
+            }
+            catch(Exception ex)
+            {
+                MainWindowViewModel.Log.Error("Ошибка на шаге количество непрочитанных смс | " + ex);
             }
             
 
@@ -200,15 +246,19 @@ namespace WpfElmaBot.Service.Commands
 
 
 
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вы авторизованы", cancellationToken);
+                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Авторизация не нужна", cancellationToken);
 
             }
             catch (Exception ex)
             {
+                OptionTelegramMessage message = new OptionTelegramMessage();
                 List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
-                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
 
                 await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken, message);
+
+                MainWindowViewModel.Log.Error("Ошибка на шаге статуса | " + ex);
+
 
             }
 

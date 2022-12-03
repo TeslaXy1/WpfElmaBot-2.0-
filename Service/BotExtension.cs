@@ -67,7 +67,7 @@ namespace WpfElmaBot.Service
         {
             if (HasCacheData(bot, userId))
             {
-                _userHandlerData.Remove(userId);
+                _userHandlerData.Remove(userId);//если ошибка, то удалить класс
             }
 
         }

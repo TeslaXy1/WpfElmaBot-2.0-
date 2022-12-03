@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using WpfElmaBot.Service.Commands;
+using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot.Service
 {
@@ -18,7 +19,7 @@ namespace WpfElmaBot.Service
         public const string MENU = "Меню";
         public const string START = "/start";
         public const string CountUnread = "✉️Кол-во непрочитанных сообщений";
-        public const string Status = "Статус";
+        public const string Status = "Вы авторизованы✅";
 
 
         //public const string 
@@ -86,7 +87,11 @@ namespace WpfElmaBot.Service
                 //Сообщение что команда не найдена
                 await CommandMissing(botClient, update, cancellationToken);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                MainWindowViewModel.Log.Error("Ошибка ExecuteCommand | " + ex);
+
+            }
         }
 
         /// <summary>

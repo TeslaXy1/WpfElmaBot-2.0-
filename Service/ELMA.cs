@@ -12,6 +12,7 @@ using WpfElmaBot.Models;
 using WpfElmaBot.Service.Commands;
 using WpfElmaBot_2._0_;
 using WpfElmaBot_2._0_.Models.EntityPack;
+using WpfElmaBot_2._0_.Service.Commands;
 using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot.Service
@@ -69,9 +70,17 @@ namespace WpfElmaBot.Service
             var test = RestClient.BuildUri(request);
             var response = await RestClient.PostAsync(request);
             return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
+        }
 
-
-        }      
+        public async Task<string> PostRequestNotDeserialze(string path, string body, string authToken = null, string sessionToken = null)
+        {
+            var request = new RestRequest($"{FullURL}" + path);
+            AddHeadersELMA(request, authToken, sessionToken);
+            request.AddStringBody(body, DataFormat.Json);
+            var test = RestClient.BuildUri(request);
+            var response = await RestClient.PostAsync(request);
+            return response.Content;
+        }
 
         public async Task<List<T>> GetEntity<T>(string path, string authToken , string sessionToken ) where T : Entity
         {
@@ -129,9 +138,10 @@ namespace WpfElmaBot.Service
 
 
         }
+
         public async void AuthorizationUser(Auth authorization, long chatid, string login)
         {
-                var eqlQuery = $"IdUserElma={authorization.CurrentUserId}"; 
+                var eqlQuery = $"IdUserElma={authorization.CurrentUserId}";   //TODO ваш аккаунт авторизован ругим пользователем
                 var limit = "1";
                 var offset = "0";
                 var sort = "";
@@ -161,6 +171,20 @@ namespace WpfElmaBot.Service
                     else
                     {
 
+                        if (entity[0].IdTelegram != Convert.ToString(chatid))
+                        {
+                            OptionTelegramMessage message = new OptionTelegramMessage();
+                            List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
+                            message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
+
+                            await new CommandRoute().MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: Convert.ToInt64(entity[0].IdTelegram), msg: "Выполенен вход с другого аккаунта телеграм", TelegramCore.cancellation, message);
+
+                            TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[0].IdTelegram)).Value.AuthToken = null;
+                            TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[0].IdTelegram)).Value.SessionToken = null;
+                            TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[0].IdTelegram)).Value.StatusAuth = false;
+                        }
+
+
                         entity[0].AuthToken = authorization.AuthToken;
                         entity[0].SessionToken = authorization.SessionToken;
                         entity[0].IdTelegram = Convert.ToString(chatid);
@@ -168,7 +192,10 @@ namespace WpfElmaBot.Service
                         jsonBody = System.Text.Json.JsonSerializer.Serialize(entity[0]);
 
                     }                                                          
-                    var entityPost = await PostRequest<Entity>(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}"  : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
+                    var entityPost = await PostRequestNotDeserialze(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}"  : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
+
+                    
+
                 }
                 catch (Exception ex)
                 {

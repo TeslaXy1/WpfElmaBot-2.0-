@@ -63,6 +63,37 @@ namespace WpfElmaBot_2._0_.Service.Commands
             return replyKeyboardMarkup;
         }
 
+        //public static List<List<InlineKeyboardButton>> InlineButtons(int maxColumn, List<IInlineContent> menu)
+        //{
+        //    List<List<InlineKeyboardButton>> buttons = new();
+
+        //    int row = 0;
+        //    int currentElement = 0;
+
+        //    foreach (var item in menu)
+        //    {
+        //        if (currentElement == 0)
+        //        {
+        //            buttons.Add(new List<InlineKeyboardButton>());
+        //            buttons[row].Add(GetInlineButton(item));
+        //        }
+        //        else
+        //        {
+        //            buttons[row].Add(GetInlineButton(item));
+        //        }
+
+        //        currentElement++;
+
+        //        if (currentElement >= maxColumn)
+        //        {
+        //            currentElement = 0;
+        //            row++;
+        //        }
+        //    }
+
+        //    return buttons;
+        //}
+
         //public static InlineKeyboardMarkup InlineKeyboard(int maxColumn, List<IInlineContent> menu)
         //{
         //    List<List<InlineKeyboardButton>> buttons = new();

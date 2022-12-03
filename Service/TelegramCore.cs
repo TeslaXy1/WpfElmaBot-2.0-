@@ -83,11 +83,11 @@ namespace WpfElmaBot.Service
                     receiverOptions,
                     cancellationToken
                 );
-                getTelegramCore().InvokeCommonStatus($"{DateTime.Now.ToString("g")}-Бот запущен", TelegramCore.TelegramEvents.Status);
+                getTelegramCore().InvokeCommonStatus($"Бот запущен", TelegramCore.TelegramEvents.Status);
                 //vm.Status = $"{DateTime.Now.ToString("g")}-Бот запущен";
                 //_cancelTokenSource = new CancellationTokenSource();
             }
-            catch(Telegram.Bot.Exceptions.RequestException)
+            catch(Telegram.Bot.Exceptions.RequestException ex)
             {
                 //vm.AttachedPropertyAppendError = "Нет подключения к интернету";
                 getTelegramCore().InvokeCommonError("Нет подключения к интернету", TelegramCore.TelegramEvents.Status);
@@ -127,6 +127,15 @@ namespace WpfElmaBot.Service
                     => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
                 _ => exception.ToString()
             };
+
+            getTelegramCore().InvokeCommonStatus("Бот остановлен", TelegramCore.TelegramEvents.Status);
+            
+            if (ErrorMessage.Contains("An error occurred while sending the request"))
+            {
+                MessageBox.Show("Проверьте подключение к интернету");
+                getTelegramCore().InvokeCommonError("Бот остановлен - проверьте подключение к интернету", TelegramCore.TelegramEvents.Status);
+
+            }
             MainWindowViewModel.Log.Error("Ошибка телеграм | " + ErrorMessage);
 
 

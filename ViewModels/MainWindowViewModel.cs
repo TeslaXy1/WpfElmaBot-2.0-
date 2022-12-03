@@ -224,23 +224,13 @@ namespace WpfElmaBot_2._0_.ViewModels
                 Common.IsPass = ConfigurationManager.AppSettings.Get("IsPass");
                 #endregion
 
-
-
-
                 string[] AdressPort = ELMA.FullURL.Split('/');
                 string[] adresport = AdressPort[2].Split(':');
                 Adress = adresport[0];
                 Port = adresport[1];
 
                 Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\nАдрес: {Adress}\nПорт: {Port}\n-----------------------------------------------------------");
-                new ElmaMessages(this).Start();
-
-
-                //var authEntity = await AuthEntity(ELMA.login, Common.IsPass == "false" ? $@"""{ELMA.password}""" : ELMA.password);
-
-
-
-
+                new ElmaMessages().Start();
 
                 var telegram = TelegramCore.getTelegramCore(this);
                 telegram.Start();
@@ -264,7 +254,7 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         private void Telegram_OnCommonStatus(string message, TelegramCore.TelegramEvents events)
         {
-            Status = message;
+            Status = $"{DateTime.Now.ToString("g")} - {message}";
         }
 
         private void Telegram_OnCommonError(string message, TelegramCore.TelegramEvents events)
