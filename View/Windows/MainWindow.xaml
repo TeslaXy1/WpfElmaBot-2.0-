@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:WpfElmaBot_2._0_" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:Icon ="http://metro.mahapps.com/winfx/xaml/iconpacks" 
         mc:Ignorable="d"
-        Height="450" Width="810" AllowsTransparency="true" WindowStyle="None" WindowStartupLocation="CenterScreen" Background="Transparent" WindowState="Normal" ResizeMode="NoResize">
+        Height="450" Width="810" AllowsTransparency="true" WindowStyle="None" WindowStartupLocation="CenterScreen" Background="Transparent" WindowState="{Binding WindowState}" ResizeMode="NoResize">
     <Window.DataContext>
         <vm:MainWindowViewModel/>
 
@@ -52,6 +52,10 @@
                                 <TextBlock Text="Неполадки" FontSize="16"/>
                             </StackPanel>
                         </Button>
+
+
+                        
+
                     </StackPanel>
 
 
@@ -68,9 +72,40 @@
             </Border>
 
 
+            <Grid Grid.Column="1" Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="60"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <WrapPanel Grid.Row="0" HorizontalAlignment="Right" Margin="0 0 10 0">
+                    <Grid>
+                        <Grid.ColumnDefinitions >
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Button Width="40"  Margin="0 0 00 00" Grid.Column="1" Style="{StaticResource MenuButton}" Cursor="Hand"  HorizontalAlignment="Right" VerticalAlignment="Top"  Command="{Binding CloseAppCommand}" ToolTip="Закрыть">
+                            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="0 0 0 0" >
+                                <materialDesign:PackIcon Kind="ExitToApp" VerticalAlignment="Center" Margin="0 0 0 0" />
+                                <!--<TextBlock Text="Выход" FontSize="16"/>-->
+                            </StackPanel>
+                        </Button>
 
-            <TextBox  Grid.Column="1" Grid.RowSpan="2"  Margin="10 60 0 0"  vm:TextBoxApppendBehaviors.AppendText="{Binding AttachedPropertyAppend}"      vm:TextBoxClearBehavior.TextBoxClear="{Binding AttachedPropertyClear}"       Visibility="{Binding VisibleConsol}"    Panel.ZIndex="1"   IsReadOnly="True"   IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630"  Cursor="Arrow"/>
-            <TextBox  Grid.Column="1" Grid.RowSpan="2"  Margin="10 60 0 0"  vm:TextBoxApppendBehaviors.AppendText="{Binding AttachedPropertyAppendError}" vm:TextBoxClearBehavior.TextBoxClear="{Binding AttachedPropertyClearError}"  Visibility="{Binding VisibleError}"     Panel.ZIndex="1"   IsReadOnly="True"   IsReadOnlyCaretVisible="True" Height="340" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630"  Cursor="Arrow"/>
+                        <Button Width="40"  Margin="0 0 00 00" Grid.Column="0" Style="{StaticResource MenuButton}" Cursor="Hand"  HorizontalAlignment="Right" VerticalAlignment="Top"  Command="{Binding RollUpCommand}" ToolTip="Свернуть">
+                            <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="0 0 0 0" >
+                                <materialDesign:PackIcon Kind="FullscreenExit" VerticalAlignment="Center" Margin="0 0 0 0" />
+                                <!--<TextBlock Text="Выход" FontSize="16"/>-->
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    
+                </WrapPanel>
+                
+                
+                <TextBox  Grid.Row="1"  Margin="10 0 0 0"  vm:TextBoxApppendBehaviors.AppendText="{Binding AttachedPropertyAppend}"      vm:TextBoxClearBehavior.TextBoxClear="{Binding AttachedPropertyClear}"       Visibility="{Binding VisibleConsol}"    Panel.ZIndex="1"   IsReadOnly="True"   IsReadOnlyCaretVisible="True" Height="330" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630"  Cursor="Arrow"/>
+                <TextBox  Grid.Row="1"  Margin="10 00 0 0"  vm:TextBoxApppendBehaviors.AppendText="{Binding AttachedPropertyAppendError}" vm:TextBoxClearBehavior.TextBoxClear="{Binding AttachedPropertyClearError}"  Visibility="{Binding VisibleError}"     Panel.ZIndex="1"   IsReadOnly="True"   IsReadOnlyCaretVisible="True" Height="330" VerticalAlignment="Top" HorizontalAlignment="Left" Width="630"  Cursor="Arrow"/>
+            </Grid>
+            
 
            
 

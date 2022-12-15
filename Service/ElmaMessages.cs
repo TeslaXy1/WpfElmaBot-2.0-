@@ -366,11 +366,12 @@ namespace WpfElmaBot_2._0_.Service
                     
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 TelegramCore.getTelegramCore().InvokeCommonError($"Ошибка генерации сообщения для {entity.Login}", TelegramCore.TelegramEvents.Password);
                 MainWindowViewModel.Log.Error($"Ошибка генерации  сообщения для {entity.Login}| " + ex) ;
             }
+            
         }
         public async Task GenerateComment(MessegesOtvet messages,string user,long idTelegram)
         {

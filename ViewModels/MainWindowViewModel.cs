@@ -142,6 +142,14 @@ namespace WpfElmaBot_2._0_.ViewModels
         }
         #endregion
 
+        private WindowState _WindowState;
+
+        public WindowState WindowState
+        {
+            get => _WindowState;
+            set=> Set(ref _WindowState, value);
+        }
+
         #endregion
 
         #region Команды
@@ -198,6 +206,23 @@ namespace WpfElmaBot_2._0_.ViewModels
         private bool CanCloseAppCommandExecute(object p) => true;
         #endregion
 
+
+        #region команда кнопки свернуть
+
+        public ICommand RollUpCommand { get; set; }
+       
+
+        private void OnRollUpCommandExecuted(object p)
+        {
+           
+                WindowState = WindowState.Minimized;
+
+            
+        }
+        private bool CanRollUpCommandExecute(object p) => true;
+
+        #endregion
+
         #endregion
 
         public MainWindowViewModel()
@@ -205,13 +230,18 @@ namespace WpfElmaBot_2._0_.ViewModels
             try
             {
 
+                WindowState = WindowState.Normal;
 
                 #region Команды
                 MainBtnCommand = new LambdaCommand(OnMainBtnCommandExecuted, CanMainBtnCommandExecute);
                 SettingBtnCommand = new LambdaCommand(OnSettingBtnCommandExecuted, CanSettingBtnCommandExecute);
                 ErrorBtnCommand = new LambdaCommand(OnErrorBtnCommandExecuted, CanErrorBtnCommandExecute);
                 CloseAppCommand = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
+                RollUpCommand = new LambdaCommand(OnRollUpCommandExecuted, CanRollUpCommandExecute);
+
                 #endregion
+
+
 
                 #region загрузка данных из конфига
                 ELMA.appToken = ConfigurationManager.AppSettings.Get("TokenElma");
