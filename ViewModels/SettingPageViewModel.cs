@@ -28,7 +28,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         private static readonly HttpClient client = new HttpClient();
         private static string authToken;
         private static string sessionToken;
-        private static Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+         public static Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
 
         private static SettingPage instance;
@@ -230,37 +230,38 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             try
             {
-                bool botToken = CheckTokenBot();//проверка токена бота
-                if (botToken == true)
-                {
-                    bool adresPort = CheckAdresPort();//проверка адреса и порта
-                    if (adresPort == true)
-                    {
-                        bool LoginAndTokenElmma = CheckTokenElmaandLoginPas();//проверка токена Ельмы, логина и пароля
-                        if (LoginAndTokenElmma == true)
-                        {                           
-                            bool IsTypeUid = CheckEnt();//проверка TypeUid справочника                          
-                            if (IsTypeUid == true)
-                            {
-                                if (IsPass == false)
-                                {
-                                    config.AppSettings.Settings["IsPass"].Value = "false";
-                                }
-                                else { config.AppSettings.Settings["IsPass"].Value = "true";}
+                //bool botToken = CheckTokenBot();//проверка токена бота
+                //if (botToken == true)
+                //{
+                //    bool adresPort = CheckAdresPort();//проверка адреса и порта
+                //    if (adresPort == true)
+                //    {
+                //        bool LoginAndTokenElmma = CheckTokenElmaandLoginPas();//проверка токена Ельмы, логина и пароля
+                //        if (LoginAndTokenElmma == true)
+                //        {                           
+                //            bool IsTypeUid = CheckEnt();//проверка TypeUid справочника                          
+                //            if (IsTypeUid == true)
+                //            {
+                //                if (IsPass == false)
+                //                {
+                //                    config.AppSettings.Settings["IsPass"].Value = "false";
+                //                }
+                //                else { config.AppSettings.Settings["IsPass"].Value = "true";}
 
-                                ConfigurationManager.RefreshSection("appSettings");
-                                config.Save(ConfigurationSaveMode.Modified);
-                                Loading = "Hidden";
-                                MessageBox.Show("Успешно.Настройка завершена. Для применения настроек перезапустите программу.");
-                            } 
+                //                ConfigurationManager.RefreshSection("appSettings");
+                //                config.Save(ConfigurationSaveMode.Modified);
+                //                Loading = "Hidden";
+                //                MessageBox.Show("Успешно.Настройка завершена. Для применения настроек перезапустите программу.");
+
+                //            } 
                             
-                            else { Loading = "Hidden"; MessageBox.Show("Неверный Uid справочника. Настройка не завершена"); }
-                        }
-                        else { Loading = "Hidden"; MessageBox.Show("Неверный токен Elma или логин с паролем. Настройка не завершена"); }
-                    }
-                    else { Loading = "Hidden"; MessageBox.Show("Неверный адрес или порт. Настройка не завершена"); }
-                }
-                else { Loading = "Hidden"; MessageBox.Show("Неверный токен бота. Настройка не завершена"); }
+                //            else { Loading = "Hidden"; MessageBox.Show("Неверный Uid справочника. Настройка не завершена"); }
+                //        }
+                //        else { Loading = "Hidden"; MessageBox.Show("Неверный токен Elma или логин с паролем. Настройка не завершена"); }
+                //    }
+                //    else { Loading = "Hidden"; MessageBox.Show("Неверный адрес или порт. Настройка не завершена"); }
+                //}
+                //else { Loading = "Hidden"; MessageBox.Show("Неверный токен бота. Настройка не завершена"); }
             }
             catch (Exception ex)
             {
@@ -271,7 +272,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             }
         }
 
-        private bool CheckTokenBot()
+        public static bool CheckTokenBot(string TokenBot)
         {
             try
             {
@@ -292,7 +293,7 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         }
 
-        private bool CheckTokenElmaandLoginPas()
+        public static bool CheckTokenElmaandLoginPas(string Adress, string Port, string Login,string TokenElma,string Password, bool IsPass)
         {
             byte [] sentData = new byte[5000];
             try
@@ -350,7 +351,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             }
         }
 
-        private bool CheckAdresPort()
+        public static bool CheckAdresPort(string Adress,string Port)
         {
             try
             {
@@ -388,7 +389,7 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         }
 
-        private bool CheckEnt()
+        public static bool CheckEnt(string Adress,string Port,string TypeUid)
         {
 
             try

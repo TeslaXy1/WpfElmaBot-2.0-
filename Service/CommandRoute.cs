@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using WpfElmaBot.Service.Commands;
+using WpfElmaBot_2._0_.Service.Commands;
 using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot.Service
@@ -59,33 +60,40 @@ namespace WpfElmaBot.Service
         {
             try
             {
-                var userId = update.GetChatId();
-                if (botClient.HasStep(userId))
+                if (command != null)
                 {
-                    if (command== MENU || command == START)
+                    var userId = update.GetChatId();
+                    if (botClient.HasStep(userId))
                     {
-                        botClient.ClearStepUser(userId);
-                        //ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
-                        await new Common(this).Menu(botClient, update, cancellationToken);
+                        if (command == MENU || command == START)
+                        {
+                            botClient.ClearStepUser(userId);
+                            //ExecuteCommand(update.Message.Text, botClient, update, cancellationToken);
+                            await new Common(this).Menu(botClient, update, cancellationToken);
+                            return;
+                        }
+                        await botClient.GetStepOrNull(userId).Value(botClient, update, cancellationToken);
                         return;
                     }
-                    await botClient.GetStepOrNull(userId).Value(botClient, update, cancellationToken);
-                    return;
-                }
 
 
-                foreach (var item in _commands)
-                {
-                    if (item.Key.ToLower() == command.ToLower())
+                    foreach (var item in _commands)
                     {
-                        //Выполнение команды
-                        await item.Value(botClient, update, cancellationToken);
+                        if (item.Key.ToLower() == command.ToLower())
+                        {
+                            //Выполнение команды
+                            await item.Value(botClient, update, cancellationToken);
 
-                        return;
+                            return;
+                        }
                     }
+                    //Сообщение что команда не найдена
+                    await CommandMissing(botClient, update, cancellationToken);
                 }
-                //Сообщение что команда не найдена
-                await CommandMissing(botClient, update, cancellationToken);
+                else
+                {
+                    await CommandMissing(botClient, update, cancellationToken);
+                }
             }
             catch (Exception ex)
             {
@@ -99,7 +107,11 @@ namespace WpfElmaBot.Service
         /// </summary>
         public async Task CommandMissing(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            await MessageCommand.Send(botClient, update.GetChatId(), $"Отсутствует команда '{update.Message.Text}'", cancellationToken);
+            OptionTelegramMessage message = new OptionTelegramMessage();
+            List<string> ids = new List<string> { CommandRoute.MENU };
+            message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
+
+            await MessageCommand.Send(botClient, update.GetChatId(), $"Отсутствует команда '{update.Message.Text}'", cancellationToken,message);
         }
     }
 }

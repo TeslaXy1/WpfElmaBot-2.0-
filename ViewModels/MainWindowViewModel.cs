@@ -1,6 +1,9 @@
 ﻿using NLog;
+using RestSharp;
 using System;
 using System.Configuration;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,6 +18,11 @@ namespace WpfElmaBot_2._0_.ViewModels
 {
     public class MainWindowViewModel : ViewModel
     {
+        private static RestClient RestClient { get; set; }
+        private static readonly HttpClient client = new HttpClient();
+        private static string authToken;
+        private static string sessionToken;
+        private static Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
         public static string Adress;
         public static string Port;
@@ -94,6 +102,128 @@ namespace WpfElmaBot_2._0_.ViewModels
         }
         #endregion
 
+        #region Видимость настроек
+        private string _visibleSettings;
+        /// <summary>
+        /// свойство консоли
+        /// </summary>
+        public string VisibleSettings
+        {
+            get => _visibleSettings;
+            set => Set(ref _visibleSettings, value);
+        }
+        #endregion
+
+
+        #region чекбокс проверки кавычек
+        public bool IsPass { get; set; }
+
+        #endregion
+
+        #region Токен Elma
+
+        private string _tokenElma;
+        /// <summary>
+        /// токен Elma
+        /// </summary>
+        public string TokenElma
+        {
+            get => _tokenElma;
+            set => Set(ref _tokenElma, value);
+        }
+        #endregion
+
+        #region Токен бота
+
+        private string _tokenBot;
+        /// <summary>
+        ///токен бота
+        /// </summary>
+        public string TokenBot
+        {
+            get => _tokenBot;
+            set => Set(ref _tokenBot, value);
+        }
+        #endregion
+
+        #region Адрес
+
+        private string _settingAdress;
+        /// <summary>
+        /// адресс
+        /// </summary>
+        public string SettingAdress
+        {
+            get => _settingAdress;
+            set => Set(ref _settingAdress, value);
+        }
+        #endregion
+
+        #region Порт
+
+        private string _settingPort;
+        /// <summary>
+        /// порт
+        /// </summary>
+        public string SettingPort
+        {
+            get => _settingPort;
+            set => Set(ref _settingPort, value);
+        }
+        #endregion
+
+        #region TypeUid справочника
+
+        private string _typeUid;
+        /// <summary>
+        /// Uid справочника
+        /// </summary>
+        public string TypeUid
+        {
+            get => _typeUid;
+            set => Set(ref _typeUid, value);
+        }
+        #endregion
+
+        #region Логин
+
+        private string _login;
+        /// <summary>
+        /// логин
+        /// </summary>
+        public string Login
+        {
+            get => _login;
+            set => Set(ref _login, value);
+        }
+        #endregion
+
+        #region Пароль
+
+        private string _password;
+        /// <summary>
+        /// Пароль
+        /// </summary>
+        public string Password
+        {
+            get => _password;
+            set => Set(ref _password, value);
+        }
+        #endregion
+
+        #region Анимация загрузки
+
+        private string _loading = "Hidden"; //Visible
+        /// <summary>
+        /// Анимация загрузки
+        /// </summary>
+        public string Loading
+        {
+            get => _loading;
+            set => Set(ref _loading, value);
+        }
+        #endregion
+
         #region Видимость консоли ошибок
         private string _visibleError = "Hidden";
         /// <summary>
@@ -142,6 +272,8 @@ namespace WpfElmaBot_2._0_.ViewModels
         }
         #endregion
 
+        #region кнопка свернуть
+
         private WindowState _WindowState;
 
         public WindowState WindowState
@@ -149,6 +281,19 @@ namespace WpfElmaBot_2._0_.ViewModels
             get => _WindowState;
             set=> Set(ref _WindowState, value);
         }
+        #endregion
+
+        #region цвет неполадок
+        private string _colorError = "Hidden";
+        /// <summary>
+        /// свойство кнопки ошибок
+        /// </summary>
+        public string ColorError
+        {
+            get => _colorError;
+            set => Set(ref _colorError, value);
+        }
+        #endregion
 
         #endregion
 
@@ -163,6 +308,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             IsDefaultError = false;
             VisibleConsol = "Visible";
             VisibleError = "Hidden";
+            VisibleSettings = "Hidden";
 
         }
         private bool CanMainBtnCommandExecute(object p) => true;
@@ -174,7 +320,13 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             IsDefaultMain = false;
             IsDefaultError = false;
-            SettingPageViewModel.getSettingPage().ShowDialog();
+            IsDefaultSetting = true;
+
+            VisibleConsol = "Hidden";
+            VisibleError = "Hidden";
+            VisibleSettings = "Visible";
+
+            //SettingPageViewModel.getSettingPage().ShowDialog();
         }
         private bool CanSettingBtnCommandExecute(object p) => true;
         #endregion
@@ -188,6 +340,8 @@ namespace WpfElmaBot_2._0_.ViewModels
             IsDefaultError = true;
             VisibleConsol = "Hidden";
             VisibleError = "Visible";
+            ColorError = "Hidden";
+            VisibleSettings = "Hidden";
         }
         private bool CanErrorBtnCommandExecute(object p) => true;
         #endregion
@@ -206,6 +360,29 @@ namespace WpfElmaBot_2._0_.ViewModels
         private bool CanCloseAppCommandExecute(object p) => true;
         #endregion
 
+        #region Команда кнопки запустить
+        public ICommand StartBtnCommand { get; set; }
+        private void OnStartBtnCommandExecuted(object p)
+        {
+            TelegramCore.getTelegramCore().RefreshTelegramCore();
+            StartTelegram();
+            new ElmaMessages().Start();
+        }
+        private bool CanStartBtnCommandExecute(object p) => true;
+        #endregion
+
+        #region Команда кнопки остановить
+        public ICommand StopBtnCommand { get; set; }
+        private void OnStopBtnCommandExecuted(object p)
+        {
+            ElmaMessages.Stop();
+            TelegramCore.getTelegramCore().RefreshTelegramCore();
+
+
+
+        }
+        private bool CanStopBtnCommandExecute(object p) => true;
+        #endregion
 
         #region команда кнопки свернуть
 
@@ -223,6 +400,33 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         #endregion
 
+        #region Команда кнопки сохранения 
+        public ICommand SaveSettingsCommand { get; set; }
+        private void OnSaveSettingsCommandExecuted(object p)
+        {
+            try
+            {
+                if (TokenBot != null && TokenElma != null && Adress != null && Port != null && TypeUid != null && Login != null && Password != null)
+                {
+
+                    Loading = "Visible";
+                    Task.Run( () => CheckSetting());
+
+                }
+                else
+                {
+                    MessageBox.Show("Заполните все поля");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Что-то пошло не так.\nПопробуйте ещё раз.");
+                Log.Error("Ошибка запуска потока проверки настроек | " + ex);
+            }
+        }
+        private bool CanSaveSettingsCommandExecute(object p) => true;
+        #endregion
+
         #endregion
 
         public MainWindowViewModel()
@@ -231,6 +435,8 @@ namespace WpfElmaBot_2._0_.ViewModels
             {
 
                 WindowState = WindowState.Normal;
+                IsDefaultMain = true;
+                VisibleSettings = "Hidden";
 
                 #region Команды
                 MainBtnCommand = new LambdaCommand(OnMainBtnCommandExecuted, CanMainBtnCommandExecute);
@@ -238,6 +444,9 @@ namespace WpfElmaBot_2._0_.ViewModels
                 ErrorBtnCommand = new LambdaCommand(OnErrorBtnCommandExecuted, CanErrorBtnCommandExecute);
                 CloseAppCommand = new LambdaCommand(OnCloseAppCommandExecuted, CanCloseAppCommandExecute);
                 RollUpCommand = new LambdaCommand(OnRollUpCommandExecuted, CanRollUpCommandExecute);
+                StartBtnCommand = new LambdaCommand(OnStartBtnCommandExecuted, CanStartBtnCommandExecute);
+                StopBtnCommand = new LambdaCommand(OnStopBtnCommandExecuted, CanStopBtnCommandExecute);
+                SaveSettingsCommand = new LambdaCommand(OnSaveSettingsCommandExecuted, CanSaveSettingsCommandExecute);
 
                 #endregion
 
@@ -254,19 +463,38 @@ namespace WpfElmaBot_2._0_.ViewModels
                 Common.IsPass = ConfigurationManager.AppSettings.Get("IsPass");
                 #endregion
 
-                string[] AdressPort = ELMA.FullURL.Split('/');
-                string[] adresport = AdressPort[2].Split(':');
-                Adress = adresport[0];
-                Port = adresport[1];
+                if(ELMA.FullURL!="")
+                {
+                    string[] AdressPort = ELMA.FullURL.Split('/');
+                    string[] adresport = AdressPort[2].Split(':');
+                    Adress = adresport[0];
+                    Port = adresport[1];
+
+                    TokenElma = ELMA.appToken;
+                    TokenBot = TelegramCore.TelegramToken;
+                    SettingAdress = Adress;
+                    SettingPort = Port;
+                    TypeUid = ELMA.TypeUid;
+                    Login = ELMA.login;
+                    Password = ELMA.password;
+                    
+                    if (Common.IsPass == "true")
+                    {
+                        IsPass = true;
+                    }
+                    else { IsPass = false; }
+                }
+                else
+                {
+                    MessageBox.Show("Проверьте настройки!");
+                    //Telegram_OnCommonError("Проверьте настройки!",TelegramCore.TelegramEvents.Status);
+                }
+               
 
                 Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\nАдрес: {Adress}\nПорт: {Port}\n-----------------------------------------------------------");
                 new ElmaMessages().Start();
 
-                var telegram = TelegramCore.getTelegramCore(this);
-                telegram.Start();
-                telegram.OnCommonLog += Telegram_OnCommonLog;
-                telegram.OnCommonError += Telegram_OnCommonError;
-                telegram.OnCommonStatus += Telegram_OnCommonStatus;
+                StartTelegram();
 
                 AttachedPropertyAppend = "Здесь будут отображаться сообщения из телеграма\n" + Environment.NewLine;
                 AttachedPropertyAppendError = "Здесь будут отображаться неполадки в работе программы\n" + Environment.NewLine;
@@ -282,6 +510,18 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         }
 
+
+        private void StartTelegram()
+        {
+            var telegram = TelegramCore.getTelegramCore();
+            telegram.Start();
+            telegram.OnCommonLog += Telegram_OnCommonLog;
+            telegram.OnCommonError += Telegram_OnCommonError;
+            telegram.OnCommonStatus += Telegram_OnCommonStatus;
+            //telegram.OnColorError += Telegram_OnColorError;
+        }
+   
+
         private void Telegram_OnCommonStatus(string message, TelegramCore.TelegramEvents events)
         {
             Status = $"{DateTime.Now.ToString("g")} - {message}";
@@ -290,6 +530,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         private void Telegram_OnCommonError(string message, TelegramCore.TelegramEvents events)
         {
             AttachedPropertyAppendError = $"{DateTime.Now.ToString("G")}: {message} \n" + Environment.NewLine;
+            ColorError = "Visible";
         }
 
         private void Telegram_OnCommonLog(string message, TelegramCore.TelegramEvents events)
@@ -298,5 +539,53 @@ namespace WpfElmaBot_2._0_.ViewModels
             AttachedPropertyAppend = $"{DateTime.Now.ToString("G")}: {message} \n" + Environment.NewLine;
 
         }
+
+        private async void CheckSetting()
+        {
+            try
+            {
+                bool botToken = SettingPageViewModel.CheckTokenBot(TokenBot);//проверка токена бота
+                if (botToken == true)
+                {
+                    bool adresPort = SettingPageViewModel.CheckAdresPort(Adress,Port);//проверка адреса и порта
+                    if (adresPort == true)
+                    {
+                        bool LoginAndTokenElmma = SettingPageViewModel.CheckTokenElmaandLoginPas(Adress,Port,Login,TokenElma,Password,IsPass);//проверка токена Ельмы, логина и пароля
+                        if (LoginAndTokenElmma == true)
+                        {
+                            bool IsTypeUid = SettingPageViewModel.CheckEnt(Adress, Port,TypeUid);//проверка TypeUid справочника                          
+                            if (IsTypeUid == true)
+                            {
+                                if (IsPass == false)
+                                {
+                                    config.AppSettings.Settings["IsPass"].Value = "false";
+                                }
+                                else { config.AppSettings.Settings["IsPass"].Value = "true"; }
+
+                                ConfigurationManager.RefreshSection("appSettings");
+                                SettingPageViewModel.config.Save(ConfigurationSaveMode.Modified);
+                                Loading = "Hidden";
+                                MessageBox.Show("Успешно.Настройка завершена. Для применения настроек перезапустите программу.");
+
+                            }
+
+                            else { Loading = "Hidden"; MessageBox.Show("Неверный Uid справочника.\nНастройка не завершена"); }
+                        }
+                        else { Loading = "Hidden"; MessageBox.Show("Неверный токен Elma или логин с паролем.\nНастройка не завершена"); }
+                    }
+                    else { Loading = "Hidden"; MessageBox.Show("Неверный адрес или порт.\nНастройка не завершена"); }
+                }
+                else { Loading = "Hidden"; MessageBox.Show("Неверный токен бота.\nНастройка не завершена"); }
+            }
+            catch (Exception ex)
+            {
+                Loading = "Hidden";
+                MessageBox.Show("Что-то пошло не так. Попробуйте еще раз.");
+                MainWindowViewModel.Log.Error("Ошибка проверки настроек | " + ex);
+
+            }
+        }
+
+
     }
 }

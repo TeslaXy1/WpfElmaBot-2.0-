@@ -2,6 +2,7 @@
 using System;
 using System.Configuration;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using WpfElmaBot.Service;
@@ -24,7 +25,7 @@ namespace WpfElmaBot_2._0_
         {
             InitializeComponent();
 
-          
+            txtPassword.Password = ((dynamic)this.DataContext).Password;
         }
 
 
@@ -35,6 +36,12 @@ namespace WpfElmaBot_2._0_
             {
                 this.DragMove();
             }
+        }
+
+        private void txtPassword_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (this.DataContext != null)
+            { ((dynamic)this.DataContext).Password = ((PasswordBox)sender).Password; }
         }
     }
 }

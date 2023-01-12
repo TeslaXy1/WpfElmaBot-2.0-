@@ -63,13 +63,13 @@ namespace WpfElmaBot.Service
 
         public async Task<T> PostRequest<T>(string path, string body, string authToken = null , string sessionToken = null )
         {
-
-            var request = new RestRequest($"{FullURL}" + path);
-            AddHeadersELMA(request, authToken, sessionToken);
-            request.AddStringBody(body, DataFormat.Json);
-            var test = RestClient.BuildUri(request);
-            var response = await RestClient.PostAsync(request);
-            return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
+                var request = new RestRequest($"{FullURL}" + path);
+                AddHeadersELMA(request, authToken, sessionToken);
+                request.AddStringBody(body, DataFormat.Json);
+                var test = RestClient.BuildUri(request);
+                var response = await RestClient.PostAsync(request);
+                return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
+            
         }
 
         public async Task<string> PostRequestNotDeserialze(string path, string body, string authToken = null, string sessionToken = null)
@@ -83,13 +83,12 @@ namespace WpfElmaBot.Service
         }
 
         public async Task<List<T>> GetEntity<T>(string path, string authToken , string sessionToken ) where T : Entity
-        {
-            var request = new RestRequest($"{FullURL}" + path);
-            AddHeadersELMA(request, authToken, sessionToken);
-            var test = RestClient.BuildUri(request);
-            var response = await RestClient.GetAsync(request);
-            return JsonConvert.DeserializeObject<List<T>>(response.Content.Trim(new char[] { '\uFEFF' }));
-
+        {  
+                var request = new RestRequest($"{FullURL}" + path);
+                AddHeadersELMA(request, authToken, sessionToken);
+                var test = RestClient.BuildUri(request);
+                var response = await RestClient.GetAsync(request);
+                return JsonConvert.DeserializeObject<List<T>>(response.Content.Trim(new char[] { '\uFEFF' }));                      
         }
         public async Task<T> GetEntityById<T>(string typeUId, long entityId, string authToken, string sessionToken ) where T : Entity
         {

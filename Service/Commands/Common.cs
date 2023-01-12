@@ -115,7 +115,7 @@ namespace WpfElmaBot.Service.Commands
 
                     OptionTelegramMessage message = new OptionTelegramMessage();
 
-                   List<string> ids = new List<string> { CommandRoute.MENU };
+                    List<string> ids = new List<string> { CommandRoute.MENU };
                     message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
 
 
