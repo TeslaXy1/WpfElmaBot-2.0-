@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:WpfElmaBot_2._0_" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:Icon ="http://metro.mahapps.com/winfx/xaml/iconpacks" 
         mc:Ignorable="d"
-        Height="450" Width="810" AllowsTransparency="true" WindowStyle="None" WindowStartupLocation="CenterScreen" Background="Transparent" WindowState="{Binding WindowState}" ResizeMode="NoResize" >
+        Height="450" Width="810" AllowsTransparency="true" WindowStyle="None" WindowStartupLocation="CenterScreen" Background="Transparent" WindowState="{Binding WindowState}" ResizeMode="NoResize" Icon="pack://application:,,,/Resources/LogoBotIcon.png">
     <Window.DataContext>
         <vm:MainWindowViewModel/>
 
@@ -221,17 +221,16 @@
                     <TextBlock Grid.Column="0" VerticalAlignment="Top" Margin="0 10 0 0" HorizontalAlignment="Left" Width="630"  Height="50"  Text="{Binding Status}" />
 
 
-                    <!--<Button Width="40"  Margin="0 0 0 00" Grid.Column="1" Style="{StaticResource MenuButton}" Cursor="Hand"  HorizontalAlignment="Right" VerticalAlignment="Top" Command="{Binding StartBtnCommand}" ToolTip="Запустить" Visibility="Visible">
+                    <Button Width="40"  Margin="0 0 0 00" Grid.Column="1" Style="{StaticResource MenuButton}" Cursor="Hand"  HorizontalAlignment="Right" VerticalAlignment="Top" Command="{Binding StartBtnCommand}" ToolTip="Запустить" Visibility="{Binding VisibleStartBtn}">
                         <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="0 0 0 0" >
                             <materialDesign:PackIcon Kind="Play" VerticalAlignment="Center" Margin="0 0 0 0" />
-                            --><!--<TextBlock Text="Выход" FontSize="16"/>--><!--
                         </StackPanel>
                     </Button>
 
-                    <Button Width="40"  Margin="0 0 00 00" Grid.Column="2" Style="{StaticResource MenuButton}" Cursor="Hand"  HorizontalAlignment="Right" VerticalAlignment="Top" Command="{Binding StopBtnCommand}" ToolTip="Остановить" Visibility="Visible">
+                    <!--<Button Width="40"  Margin="0 0 00 00" Grid.Column="2" Style="{StaticResource MenuButton}" Cursor="Hand"  HorizontalAlignment="Right" VerticalAlignment="Top" Command="{Binding StopBtnCommand}" ToolTip="Остановить" Visibility="Visible">
                         <StackPanel Orientation="Horizontal"  VerticalAlignment="Center" Margin="0 0 0 0" >
-                            <materialDesign:PackIcon Kind="Stop" VerticalAlignment="Center" Margin="0 0 0 0" />
-                            --><!--<TextBlock Text="Выход" FontSize="16"/>--><!--
+                            <materialDesign:PackIcon Kind="Stop" VerticalAlignment="Center" Margin="0 0 0 0" />-->
+                            <!--<TextBlock Text="Выход" FontSize="16"/>--><!--
                         </StackPanel>
                     </Button>-->
                 </Grid>

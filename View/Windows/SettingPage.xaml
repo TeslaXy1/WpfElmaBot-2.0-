@@ -7,13 +7,14 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:Icon ="http://metro.mahapps.com/winfx/xaml/iconpacks" 
         xmlns:vm ="clr-namespace:WpfElmaBot_2._0_.ViewModels"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
         Title="SettingPage"  Height="480" Width="425"   Background="Transparent" AllowsTransparency="True" HorizontalAlignment="Left" VerticalAlignment="Top" WindowStyle="None" WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <vm:SettingPageViewModel/>
     </Window.DataContext>
     <Border CornerRadius="20 20 20 20" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Height="480" Width="425" >
-        <Grid>
+        <!--<Grid>
             
             <Grid.RowDefinitions>
                 <RowDefinition Height="30"/>
@@ -69,7 +70,7 @@
                         <ColumnDefinition Width="0*"/>
                     </Grid.ColumnDefinitions>
                     <TextBox HorizontalAlignment="Center"    Height="50" Width="190" FontSize="12" materialDesign:HintAssist.Hint="Логин" BorderThickness="2" Text="{Binding Login}" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" />
-                    <!--<TextBox HorizontalAlignment="Center"   Grid.Column="1"   x:Name="txtPass" Height="50" Width="190" FontSize="12" materialDesign:HintAssist.Hint="Пароль" BorderThickness="2" Text="{Binding Password}" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" UseLayoutRounding="False" />-->
+                    --><!--<TextBox HorizontalAlignment="Center"   Grid.Column="1"   x:Name="txtPass" Height="50" Width="190" FontSize="12" materialDesign:HintAssist.Hint="Пароль" BorderThickness="2" Text="{Binding Password}" BorderBrush="{DynamicResource MaterialDesignDivider}"  Style="{StaticResource MaterialDesignOutlinedTextBox}" Cursor="IBeam" UseLayoutRounding="False" />--><!--
 
                     <PasswordBox  HorizontalAlignment="Center" PasswordChanged="txtPassword_PasswordChanged" Height="50" Width="200" Grid.Column="1" x:Name="txtPassword" FontSize="12" materialDesign:HintAssist.Hint="Пароль" DataContext="{Binding Password}" BorderThickness="2" BorderBrush="{DynamicResource MaterialDesignDivider}" Style="{StaticResource MaterialDesignOutlinedPasswordBox}"/>
                     <Button x:Name="SpravocnikBtn" Grid.Column="2" Height="Auto"  Width="Auto"  Content="Сохранить" Style="{StaticResource MenuButton}"  Visibility="Hidden" Cursor="Hand" Margin="12,3,9,4"    />
@@ -91,7 +92,60 @@
 
 
 
-        </Grid>
+        </Grid>-->
+
+        <lvc:CartesianChart LegendLocation="None" Height="450" Width="400">
+
+            <lvc:CartesianChart.DataTooltip>
+                <lvc:DefaultTooltip Background="Wheat" Foreground="Black" BulletSize="10" Opacity="0.7"/>
+            </lvc:CartesianChart.DataTooltip>
+
+            <lvc:CartesianChart.AxisX>
+                <lvc:Axis Foreground="#90a3b2" ShowLabels="True">
+                    <lvc:Axis.Separator>
+                        <lvc:Separator StrokeThickness="0" Step="1" />
+                    </lvc:Axis.Separator>
+                </lvc:Axis>
+                
+            </lvc:CartesianChart.AxisX>
+
+            <lvc:CartesianChart.AxisY>
+                <lvc:Axis Foreground="#90a3b2" ShowLabels="True" MinValue="0" MaxValue="200"> 
+                    <lvc:Axis.Separator>
+                        <lvc:Separator StrokeThickness="0" />
+                    </lvc:Axis.Separator>
+                </lvc:Axis>
+
+            </lvc:CartesianChart.AxisY>
+            
+            <lvc:CartesianChart.Series >
+                <lvc:LineSeries Fill="Transparent" StrokeThickness="3" PointGeometrySize="10" Values="10,20,23,50,70" >
+                    <lvc:LineSeries.Stroke >
+                        <LinearGradientBrush>
+                            <GradientStop Color="#ffffff" Offset="0.9"/>
+                            <GradientStop Color="#2889fc" Offset="0.5"/>
+                           
+                        </LinearGradientBrush>
+                    </lvc:LineSeries.Stroke>
+                    
+                </lvc:LineSeries>
+                
+                <lvc:LineSeries Fill="Transparent" StrokeThickness="3" PointGeometrySize="10" Values="20,50,30,100">
+                    <lvc:LineSeries.Stroke>
+                        <LinearGradientBrush>
+                            <GradientStop Color="#ffffff" Offset="0.9"/>
+                            <GradientStop Color="Red" Offset="0.5"/>
+                          
+                        </LinearGradientBrush>
+                    </lvc:LineSeries.Stroke>
+                </lvc:LineSeries>
+                
+            </lvc:CartesianChart.Series>
+            
+           
+            
+
+        </lvc:CartesianChart>
 
     </Border>
 </Window>

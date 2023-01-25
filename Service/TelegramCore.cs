@@ -146,16 +146,17 @@ namespace WpfElmaBot.Service
                 _ => exception.ToString()
             };
 
-            if (!exception.Message.Contains("only one bot instance is running"))
+            if (!exception.Message.Contains("only one bot instance is running") || !exception.Message.Contains("api.telegram.org:443"))
             {
                 getTelegramCore().InvokeCommonStatus("Бот остановлен", TelegramCore.TelegramEvents.Status);
+                getTelegramCore().InvokeCommonError("Бот остановлен - проверьте подключение к интернету и время", TelegramCore.TelegramEvents.Status);
             }
               
 
                 if (ErrorMessage.Contains("An error occurred while sending the request"))
                 {
                 //MessageBox.Show("Проверьте подключение к интернету");
-                getTelegramCore().InvokeCommonError("Бот остановлен - проверьте подключение к интернету", TelegramCore.TelegramEvents.Status);
+                    getTelegramCore().InvokeCommonError("Бот остановлен - проверьте подключение к интернету", TelegramCore.TelegramEvents.Status);
 
                 }
                 MainWindowViewModel.Log.Error("Ошибка телеграм | " + ErrorMessage);

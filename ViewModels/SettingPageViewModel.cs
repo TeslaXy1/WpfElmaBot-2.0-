@@ -196,7 +196,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             try
             {
-
+                
 
                 #region Команды
                 SaveSettingsCommand = new LambdaCommand(OnSaveSettingsCommandExecuted, CanSaveSettingsCommandExecute);

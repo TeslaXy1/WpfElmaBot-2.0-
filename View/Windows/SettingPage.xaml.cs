@@ -23,13 +23,13 @@ namespace WpfElmaBot_2._0_.View.Windows
         public SettingPage()
         {
             InitializeComponent();
-            txtPassword.Password = ((dynamic)this.DataContext).Password;          
+            //txtPassword.Password = ((dynamic)this.DataContext).Password;          
         }
 
         private void txtPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            if (this.DataContext != null)
-            { ((dynamic)this.DataContext).Password = ((PasswordBox)sender).Password; }
+            //if (this.DataContext != null)
+           // { ((dynamic)this.DataContext).Password = ((PasswordBox)sender).Password; }
         }
     }
 }

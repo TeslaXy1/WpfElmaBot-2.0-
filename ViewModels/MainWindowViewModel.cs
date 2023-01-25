@@ -31,12 +31,12 @@ namespace WpfElmaBot_2._0_.ViewModels
         private static MainWindowViewModel instance;
         public static MainWindowViewModel getMainWindowVM()
         {
-            
-                    if (instance == null)
-                        instance = new MainWindowViewModel();
+
+            if (instance == null)
+                instance = new MainWindowViewModel();
             return instance;
 
-            
+
         }
 
         #region Свойства
@@ -50,7 +50,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         public string Status
         {
             get => _Status;
-            set=>Set(ref _Status, value);   
+            set => Set(ref _Status, value);
         }
         #endregion
 
@@ -279,7 +279,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         public WindowState WindowState
         {
             get => _WindowState;
-            set=> Set(ref _WindowState, value);
+            set => Set(ref _WindowState, value);
         }
         #endregion
 
@@ -292,6 +292,19 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             get => _colorError;
             set => Set(ref _colorError, value);
+        }
+        #endregion
+
+        #region Видимость кнопки запустить
+
+        private string _visibleStartBtn = "Hidden";
+        /// <summary>
+        /// логин
+        /// </summary>
+        public string VisibleStartBtn
+        {
+            get => _visibleStartBtn;
+            set => Set(ref _visibleStartBtn, value);
         }
         #endregion
 
@@ -354,7 +367,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             lock (locker)
             {
                 Environment.Exit(0);
-                
+
             }
         }
         private bool CanCloseAppCommandExecute(object p) => true;
@@ -364,9 +377,10 @@ namespace WpfElmaBot_2._0_.ViewModels
         public ICommand StartBtnCommand { get; set; }
         private void OnStartBtnCommandExecuted(object p)
         {
-            TelegramCore.getTelegramCore().RefreshTelegramCore();
-            StartTelegram();
+            //TelegramCore.getTelegramCore().RefreshTelegramCore();
+            //StartTelegram();
             new ElmaMessages().Start();
+            VisibleStartBtn = "Hidden";
         }
         private bool CanStartBtnCommandExecute(object p) => true;
         #endregion
@@ -387,14 +401,14 @@ namespace WpfElmaBot_2._0_.ViewModels
         #region команда кнопки свернуть
 
         public ICommand RollUpCommand { get; set; }
-       
+
 
         private void OnRollUpCommandExecuted(object p)
         {
-           
-                WindowState = WindowState.Minimized;
 
-            
+            WindowState = WindowState.Minimized;
+
+
         }
         private bool CanRollUpCommandExecute(object p) => true;
 
@@ -406,11 +420,11 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             try
             {
-                if (TokenBot != null && TokenElma != null && Adress != null && Port != null && TypeUid != null && Login != null && Password != null)
+                if (TokenBot != null && TokenElma != null && SettingAdress != null && SettingPort != null && TypeUid != null && Login != null && Password != null)
                 {
 
                     Loading = "Visible";
-                    Task.Run( () => CheckSetting());
+                    Task.Run(() => CheckSetting());
 
                 }
                 else
@@ -433,6 +447,8 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             try
             {
+
+                // new SettingPage().Show();
 
                 WindowState = WindowState.Normal;
                 IsDefaultMain = true;
@@ -463,7 +479,7 @@ namespace WpfElmaBot_2._0_.ViewModels
                 Common.IsPass = ConfigurationManager.AppSettings.Get("IsPass");
                 #endregion
 
-                if(ELMA.FullURL!="")
+                if (ELMA.FullURL != "")
                 {
                     string[] AdressPort = ELMA.FullURL.Split('/');
                     string[] adresport = AdressPort[2].Split(':');
@@ -477,7 +493,7 @@ namespace WpfElmaBot_2._0_.ViewModels
                     TypeUid = ELMA.TypeUid;
                     Login = ELMA.login;
                     Password = ELMA.password;
-                    
+
                     if (Common.IsPass == "true")
                     {
                         IsPass = true;
@@ -487,9 +503,9 @@ namespace WpfElmaBot_2._0_.ViewModels
                 else
                 {
                     MessageBox.Show("Проверьте настройки!");
-                    //Telegram_OnCommonError("Проверьте настройки!",TelegramCore.TelegramEvents.Status);
+                    Telegram_OnCommonError("Проверьте настройки!", TelegramCore.TelegramEvents.Status);
                 }
-               
+
 
                 Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\nАдрес: {Adress}\nПорт: {Port}\n-----------------------------------------------------------");
                 new ElmaMessages().Start();
@@ -501,12 +517,12 @@ namespace WpfElmaBot_2._0_.ViewModels
 
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error("Ошибка конструктора MainWindowViewModel | " + ex);
             }
 
-            
+
 
         }
 
@@ -520,11 +536,20 @@ namespace WpfElmaBot_2._0_.ViewModels
             telegram.OnCommonStatus += Telegram_OnCommonStatus;
             //telegram.OnColorError += Telegram_OnColorError;
         }
-   
+
 
         private void Telegram_OnCommonStatus(string message, TelegramCore.TelegramEvents events)
         {
-            Status = $"{DateTime.Now.ToString("g")} - {message}";
+            if (message == "Обработка сообщений остановлена")
+            {
+                VisibleStartBtn = "Visible";
+                Status = $"{DateTime.Now.ToString("g")} - {message}";
+            }
+            else
+            {
+                Status = $"{DateTime.Now.ToString("g")} - {message}";
+            }
+
         }
 
         private void Telegram_OnCommonError(string message, TelegramCore.TelegramEvents events)
@@ -547,13 +572,13 @@ namespace WpfElmaBot_2._0_.ViewModels
                 bool botToken = SettingPageViewModel.CheckTokenBot(TokenBot);//проверка токена бота
                 if (botToken == true)
                 {
-                    bool adresPort = SettingPageViewModel.CheckAdresPort(Adress,Port);//проверка адреса и порта
+                    bool adresPort = SettingPageViewModel.CheckAdresPort(SettingAdress, SettingPort);//проверка адреса и порта
                     if (adresPort == true)
                     {
-                        bool LoginAndTokenElmma = SettingPageViewModel.CheckTokenElmaandLoginPas(Adress,Port,Login,TokenElma,Password,IsPass);//проверка токена Ельмы, логина и пароля
+                        bool LoginAndTokenElmma = SettingPageViewModel.CheckTokenElmaandLoginPas(SettingAdress, SettingPort, Login, TokenElma, Password, IsPass);//проверка токена Ельмы, логина и пароля
                         if (LoginAndTokenElmma == true)
                         {
-                            bool IsTypeUid = SettingPageViewModel.CheckEnt(Adress, Port,TypeUid);//проверка TypeUid справочника                          
+                            bool IsTypeUid = SettingPageViewModel.CheckEnt(SettingAdress, SettingPort, TypeUid);//проверка TypeUid справочника                          
                             if (IsTypeUid == true)
                             {
                                 if (IsPass == false)
