@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WpfElmaBot.Models
 {
-    internal class Auth
+    public class Auth
     {
         public string AuthToken { get; set; }
         public string CurrentUserId { get; set; }

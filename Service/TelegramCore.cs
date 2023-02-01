@@ -153,13 +153,20 @@ namespace WpfElmaBot.Service
             }
               
 
-                if (ErrorMessage.Contains("An error occurred while sending the request"))
-                {
+            if (ErrorMessage.Contains("An error occurred while sending the request"))
+            {
                 //MessageBox.Show("Проверьте подключение к интернету");
-                    getTelegramCore().InvokeCommonError("Бот остановлен - проверьте подключение к интернету", TelegramCore.TelegramEvents.Status);
+                getTelegramCore().InvokeCommonError("Бот остановлен - проверьте подключение к интернету", TelegramCore.TelegramEvents.Status);
 
-                }
-                MainWindowViewModel.Log.Error("Ошибка телеграм | " + ErrorMessage);
+            }
+
+            if(ErrorMessage.Contains("502"))
+            {
+
+                getTelegramCore().InvokeCommonError(ErrorMessage, TelegramCore.TelegramEvents.Status);
+                System.Threading.Thread.Sleep(1);
+            }
+            MainWindowViewModel.Log.Error("Ошибка телеграм | " + ErrorMessage);
 
 
         }
@@ -177,13 +184,6 @@ namespace WpfElmaBot.Service
         {
             var name = bot.GetMeAsync();
             return name.Result.FirstName;
-        }
-        public void RefreshTelegramCore()
-        {
-             
-          
-            
-            
         }
         
     }

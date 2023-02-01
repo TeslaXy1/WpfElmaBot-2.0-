@@ -17,14 +17,14 @@ using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot.Service
 {
-    internal class ELMA
+    public class ELMA
     {
         private static RestClient RestClient { get; set; }
         private static ELMA elma;
-        public static string FullURL { get; set; }
-        public static string FullURLpublic { get; set; } 
-        public static string appToken { get; set; } 
-        public static string TypeUid { get; set; } 
+        public static string FullURL { get; set; } = "http://127.0.0.1:8000/API/REST/";
+        public static string FullURLpublic { get; set; } = "http://127.0.0.1:8000/PublicAPI/REST/";
+        public static string appToken { get; set; } = "9891B3599F09558A964CFF5614E9DECF9F982EDCEDD1544F8AB4344C13F3AFEC59EEF65C03EE3C63BE113EB29C4B4E29E2CDDDF2048586F3E85417B8673AE817";
+        public static string TypeUid { get; set; } = "c5c12f67-3f57-45c2-aa70-02dfded87f77";
         public static string login { get; set; } 
         public static string password { get; set; }
 
@@ -72,7 +72,7 @@ namespace WpfElmaBot.Service
             
         }
 
-        public async Task<string> PostRequestNotDeserialze(string path, string body, string authToken = null, string sessionToken = null)
+        public async Task<string> PostRequestNotDeserialze<T>(string path, string body, string authToken = null, string sessionToken = null)
         {
             var request = new RestRequest($"{FullURL}" + path);
             AddHeadersELMA(request, authToken, sessionToken);
@@ -138,21 +138,19 @@ namespace WpfElmaBot.Service
 
         }
 
-        public async void AuthorizationUser(Auth authorization, long chatid, string login)
+        public async Task AuthorizationUser(Auth authorization, long chatid, string login)
         {
-                var eqlQuery = $"IdUserElma={authorization.CurrentUserId}";   //TODO ваш аккаунт авторизован ругим пользователем
+                var eqlQuery = $"IdUserElma={authorization.CurrentUserId}";  
                 var limit = "1";
                 var offset = "0";
                 var sort = "";
                 var filterProviderUid = "";
                 var filterProviderData = "";
                 var filter = "";
-
-                var entity = await GetEntity<EntityMargin>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", authorization.AuthToken, authorization.SessionToken);
-                try
-                {
-                    string jsonBody="";
-                   
+            try
+            {
+                    var entity = await GetEntity<EntityMargin>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", authorization.AuthToken, authorization.SessionToken);
+                    string jsonBody="";                  
                     if (entity.Count==0)
                     {
                         var body = new EntityMargin()
@@ -191,7 +189,7 @@ namespace WpfElmaBot.Service
                         jsonBody = System.Text.Json.JsonSerializer.Serialize(entity[0]);
 
                     }                                                          
-                    var entityPost = await PostRequestNotDeserialze(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}"  : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
+                    var entityPost = await PostRequestNotDeserialze<EntityMargin>(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}"  : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
 
                     
 
@@ -213,21 +211,7 @@ namespace WpfElmaBot.Service
                    
 
                 }
-
-            //var comm = new Dictionary<long, long>()
-            //for (int j = message.Data.Count - 1; j > -1; j--)
-            //{
-            //    long max = 0;
-            //    if (message.Data[j].LastComments.Data.Count!=0)
-            //    {
-            //        max = message.Data[j].LastComments.Data.Select(x => x.Id).Max();
-            //    }
-                
-            //    comm.Add(message.Data[j].Id, max);
-
-            //}
-            //TelegramCore.getTelegramCore().bot.GetCacheData(chatid).Value.LastCommentId = comm;
-
+           
         }
         
         public async Task<T> GetCountunread<T>(string authToken,string sessionToken)
@@ -243,6 +227,22 @@ namespace WpfElmaBot.Service
                 getElma().AuthorizationUser(update, chatId, login);
                 return update;
                        
+        }
+
+        public async Task ReInitializationELMA()
+        {
+            var result = await ELMA.SignIn();
+            if (result.Contains("Ошибка"))
+            {
+                int delay = 60 * 1000;
+                InvokeMessage($"Попытка переподключения через {delay / 60000} минут", LogComponent.ELMA, LogModule.Initialization);
+                await Task.Delay(60 * 1000);
+                await ReInitializationELMA();
+                return;
+            }
+
+            await UpdateNotifyData();
+
         }
     }
 }

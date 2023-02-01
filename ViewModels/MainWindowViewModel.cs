@@ -390,8 +390,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         private void OnStopBtnCommandExecuted(object p)
         {
             ElmaMessages.Stop();
-            TelegramCore.getTelegramCore().RefreshTelegramCore();
-
+           
 
 
         }
@@ -508,7 +507,8 @@ namespace WpfElmaBot_2._0_.ViewModels
 
 
                 Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\nАдрес: {Adress}\nПорт: {Port}\n-----------------------------------------------------------");
-                new ElmaMessages().Start();
+                Task.Run(() => new ElmaMessages().Start());
+                //new ElmaMessages().Start();
 
                 StartTelegram();
 

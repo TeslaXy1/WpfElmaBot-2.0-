@@ -18,7 +18,7 @@ using WpfElmaBot_2._0_.ViewModels;
 
 namespace WpfElmaBot_2._0_.Service
 {
-    internal class ElmaMessages
+    public class ElmaMessages
     {
         private static string authSprav;
         private static string sessionSprav;
@@ -46,7 +46,7 @@ namespace WpfElmaBot_2._0_.Service
         }
         public bool IsWorking => _cancelTokenSource != null;
 
-        async  Task MainCycle(CancellationToken token)
+        private async  Task MainCycle(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
@@ -70,7 +70,7 @@ namespace WpfElmaBot_2._0_.Service
             _cancelTokenSource = null;
             TelegramCore.getTelegramCore().InvokeCommonStatus($"Обработка сообщений остановлена", TelegramCore.TelegramEvents.Status);
         }
-        public  async Task ProcessingMessages() //функция обработки сообщений
+        private  async Task ProcessingMessages() //функция обработки сообщений
         {
             try
             {
@@ -148,8 +148,9 @@ namespace WpfElmaBot_2._0_.Service
                                     
                                 }
                                 
-                                await FindLastMessage(entity[i], allMessages,  chekToken.AuthToken, chekToken.SessionToken, entity[i].TimeMessage);
-                                await FindLastComment(allMessages, entity[i].Login, Convert.ToInt64(entity[i].IdTelegram));
+                                FindLastMessage(entity[i], allMessages,  chekToken.AuthToken, chekToken.SessionToken, entity[i].TimeMessage);
+                              
+                                FindLastComment(allMessages, entity[i].Login, Convert.ToInt64(entity[i].IdTelegram));
                                 await GenerateDictionary(entity[i], allMessages);
                             }                      
                             catch (Exception exception)
@@ -170,11 +171,12 @@ namespace WpfElmaBot_2._0_.Service
                         }
                         catch (Exception exception)
                         {
-                            
+                            if (!exception.Message.Contains("Unexpected character"))
+                            {
                                 KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(TelegramCore.getTelegramCore().bot, Convert.ToInt64(entity[i].IdTelegram));
 
                                 MainWindowViewModel.Log.Error("Ошибка обновления токена | " + exception);
-                                
+
                                 if (entity[i].AuthorizationUser == "true" || info.Value.StatusAuth == true)
                                 {
                                     OptionTelegramMessage message = new OptionTelegramMessage();
@@ -188,8 +190,11 @@ namespace WpfElmaBot_2._0_.Service
 
                                     await UpdateStatus(entity[i]);
                                 }
-                           
 
+                            }
+
+
+                                                         
                         }
                     }
                     firstLaunch = false;
@@ -212,7 +217,7 @@ namespace WpfElmaBot_2._0_.Service
 
         }
         
-        public  async Task UpdateStatus(EntityMargin entity) //функция обновления статуса авторизации пользователя в справочнике
+        private  async Task UpdateStatus(EntityMargin entity) //функция обновления статуса авторизации пользователя в справочнике
         {
             try
             {
@@ -223,7 +228,7 @@ namespace WpfElmaBot_2._0_.Service
                 entity.AuthorizationUser = "false";
               
                 string jsonBody     = System.Text.Json.JsonSerializer.Serialize(entity);
-                var updateEntity    = await ELMA.getElma().PostRequestNotDeserialze($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
+                var updateEntity    = await ELMA.getElma().PostRequestNotDeserialze<EntityMargin>($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
             }
             catch(Exception ex)
             {
@@ -234,7 +239,7 @@ namespace WpfElmaBot_2._0_.Service
 
         }
 
-        public  async Task UpdateMessage(EntityMargin entity,DateTime time) //функция обновления последнего сообщения в справочнике
+        private  async Task UpdateMessage(EntityMargin entity,DateTime time) //функция обновления последнего сообщения в справочнике
         {
 
             try
@@ -243,7 +248,7 @@ namespace WpfElmaBot_2._0_.Service
                 entity.TimeMessage            = time;
 
                 string jsonBody               = System.Text.Json.JsonSerializer.Serialize(entity);
-                var updateEntity              = await ELMA.getElma().PostRequestNotDeserialze($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
+                var updateEntity              = await ELMA.getElma().PostRequestNotDeserialze<EntityMargin>($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
 
             }
             catch (Exception ex)
@@ -254,7 +259,7 @@ namespace WpfElmaBot_2._0_.Service
             
 
         }
-        public async Task GenerateDictionary(EntityMargin entity, MessegesOtvet message)
+        private async Task GenerateDictionary(EntityMargin entity, MessegesOtvet message)
         {
             if (message != null)
             {
@@ -313,7 +318,7 @@ namespace WpfElmaBot_2._0_.Service
                 }
             }
         }
-        public async Task FindLastMessage(EntityMargin entity,MessegesOtvet messages,string authtoken,string sessiontoken, DateTime dateMes) //функцию генерации сообщения
+        private async Task FindLastMessage(EntityMargin entity,MessegesOtvet messages,string authtoken,string sessiontoken, DateTime dateMes) //функцию генерации сообщения
         {
             try
             {
@@ -326,10 +331,6 @@ namespace WpfElmaBot_2._0_.Service
 
                             await SendMsg(messages.Data[IdMes],entity,authtoken,sessiontoken);
                             await UpdateMessage(entity, messages.Data[IdMes].CreationDate);
-                            if(messages.Data[IdMes].LastComments.Count>0)
-                            {
-                                //await SendComment(messages.Data[IdMes], 0, entity.Login, Convert.ToInt64(entity.IdTelegram));
-                            }
                             
                         }
 
@@ -412,7 +413,7 @@ namespace WpfElmaBot_2._0_.Service
                    await route.MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: Convert.ToInt64(entity.IdTelegram), msg: msgLength? msg.Substring(i, Math.Min(4090, msg.Length - i)) : msg, TelegramCore.cancellation, messages.Url != null ? message : null);
                 }
 
-                MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Сообщение {messages.Id} отправлено пользователю {entity.Login}");
+                MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Сообщение {messages.Id} отправлено пользователю {entity.Login}, предыдущее было отправлено {entity.TimeMessage}");
                
             }
             catch(Exception ex)
@@ -422,7 +423,7 @@ namespace WpfElmaBot_2._0_.Service
             }
         }
         
-        public async Task FindLastComment(MessegesOtvet messages,string user,long idTelegram)
+        private async Task FindLastComment(MessegesOtvet messages,string user,long idTelegram)
         {
             KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(TelegramCore.getTelegramCore().bot, idTelegram);
             if (messages != null)
@@ -459,7 +460,7 @@ namespace WpfElmaBot_2._0_.Service
                 }
             }
         }
-        public async Task SendComment(Datum messages,int IdComment,string user,long idTelegram)
+        private async Task SendComment(Datum messages,int IdComment,string user,long idTelegram)
         {
             try
             {
@@ -492,7 +493,7 @@ namespace WpfElmaBot_2._0_.Service
                 message.MenuInlineKeyboardMarkup = MenuGenerator.UnitInlineKeyboard(ikm);
 
                 await route.MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: idTelegram, msg: msg, TelegramCore.cancellation, messages.Url != null ? message : null);
-                MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Комментарий {messages.Id} отправлен пользователю {user}");
+                MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Комментарий {messages.LastComments.Data[IdComment].Id} отправлен пользователю {user}");
 
             }
             catch(Exception ex)
@@ -506,8 +507,9 @@ namespace WpfElmaBot_2._0_.Service
 
         public async Task<Auth> AuthEntity(string login,string password) //функция авторизации справочника
         {
-            var authEntity = await ELMA.getElma().PostRequest<Auth>($"Authorization/LoginWith?username={login}", password);
-            return authEntity;
+            var authEntity = await ELMA.getElma().PostRequestNotDeserialze<Auth>($"Authorization/LoginWith?username={login}", password);
+            var tokens = JsonConvert.DeserializeObject<Auth>(authEntity.Trim(new char[] { '\uFEFF' }));
+            return tokens;
         }
 
     }
