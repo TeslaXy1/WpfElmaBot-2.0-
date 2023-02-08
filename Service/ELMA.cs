@@ -20,6 +20,7 @@ namespace WpfElmaBot.Service
     public class ELMA
     {
         private static RestClient RestClient { get; set; }
+        private static RestResponse RestResponse { get; set; }
         private static ELMA elma;
         public static string FullURL { get; set; } = "http://127.0.0.1:8000/API/REST/";
         public static string FullURLpublic { get; set; } = "http://127.0.0.1:8000/PublicAPI/REST/";
@@ -35,6 +36,7 @@ namespace WpfElmaBot.Service
         private ELMA()
         {
             RestClient = new RestClient();
+            RestResponse = new RestResponse();
         }
 
         
@@ -72,7 +74,7 @@ namespace WpfElmaBot.Service
             
         }
 
-        public async Task<string> PostRequestNotDeserialze<T>(string path, string body, string authToken = null, string sessionToken = null)
+        public async Task<string> PostRequestNotDeserialze(string path, string body, string authToken = null, string sessionToken = null)
         {
             var request = new RestRequest($"{FullURL}" + path);
             AddHeadersELMA(request, authToken, sessionToken);
@@ -114,7 +116,7 @@ namespace WpfElmaBot.Service
 
             string AFTER = "";
             string BEFORE = "";
-            var LIMIT = "200";
+            var LIMIT = "100000";
             var obj =  GetRequest<T>($"{FullURLpublic}EleWise.ELMA.Messages/MessageFeed/Posts/Feed?after={AFTER}&before={BEFORE}&limit={LIMIT}", authtoken, sessionToken);
             return obj;
 
@@ -189,7 +191,7 @@ namespace WpfElmaBot.Service
                         jsonBody = System.Text.Json.JsonSerializer.Serialize(entity[0]);
 
                     }                                                          
-                    var entityPost = await PostRequestNotDeserialze<EntityMargin>(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}"  : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
+                    var entityPost = await PostRequestNotDeserialze(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}"  : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
 
                     
 
@@ -229,20 +231,6 @@ namespace WpfElmaBot.Service
                        
         }
 
-        public async Task ReInitializationELMA()
-        {
-            var result = await ELMA.SignIn();
-            if (result.Contains("Ошибка"))
-            {
-                int delay = 60 * 1000;
-                InvokeMessage($"Попытка переподключения через {delay / 60000} минут", LogComponent.ELMA, LogModule.Initialization);
-                await Task.Delay(60 * 1000);
-                await ReInitializationELMA();
-                return;
-            }
-
-            await UpdateNotifyData();
-
-        }
+        
     }
 }

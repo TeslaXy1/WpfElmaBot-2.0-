@@ -97,19 +97,17 @@ namespace WpfElmaBot.Service
                     cts.Cancel();
                 }
                 
-                //vm.Status = $"{DateTime.Now.ToString("g")}-Бот запущен";
-                //_cancelTokenSource = new CancellationTokenSource();
+
             }
             catch(Telegram.Bot.Exceptions.RequestException ex)
             {
-                //vm.AttachedPropertyAppendError = "Нет подключения к интернету";
+                
                 if(!ex.Message.Contains("only one bot instance is running"))
                 {
                   
                     getTelegramCore().InvokeCommonError("Нет подключения к интернету", TelegramCore.TelegramEvents.Status);
                 }
-                
-                //MessageBox.Show("Убедитесь, что есть подключение к интернету");
+
             }
         }
                
@@ -155,7 +153,6 @@ namespace WpfElmaBot.Service
 
             if (ErrorMessage.Contains("An error occurred while sending the request"))
             {
-                //MessageBox.Show("Проверьте подключение к интернету");
                 getTelegramCore().InvokeCommonError("Бот остановлен - проверьте подключение к интернету", TelegramCore.TelegramEvents.Status);
 
             }

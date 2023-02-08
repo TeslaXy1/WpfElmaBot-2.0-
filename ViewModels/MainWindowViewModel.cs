@@ -28,16 +28,6 @@ namespace WpfElmaBot_2._0_.ViewModels
         public static string Port;
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private static MainWindowViewModel instance;
-        public static MainWindowViewModel getMainWindowVM()
-        {
-
-            if (instance == null)
-                instance = new MainWindowViewModel();
-            return instance;
-
-
-        }
 
         #region Свойства
 
@@ -379,7 +369,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             //TelegramCore.getTelegramCore().RefreshTelegramCore();
             //StartTelegram();
-            new ElmaMessages().Start();
+            Task.Run(() => new ElmaMessages().Start());
             VisibleStartBtn = "Hidden";
         }
         private bool CanStartBtnCommandExecute(object p) => true;
@@ -446,9 +436,6 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             try
             {
-
-                // new SettingPage().Show();
-
                 WindowState = WindowState.Normal;
                 IsDefaultMain = true;
                 VisibleSettings = "Hidden";
@@ -464,8 +451,6 @@ namespace WpfElmaBot_2._0_.ViewModels
                 SaveSettingsCommand = new LambdaCommand(OnSaveSettingsCommandExecuted, CanSaveSettingsCommandExecute);
 
                 #endregion
-
-
 
                 #region загрузка данных из конфига
                 ELMA.appToken = ConfigurationManager.AppSettings.Get("TokenElma");
@@ -508,7 +493,6 @@ namespace WpfElmaBot_2._0_.ViewModels
 
                 Log.Debug($"\nБот запущен со следующими настройками:\nТокен Ельмы: {ELMA.appToken}\nТокен телеграма: {TelegramCore.TelegramToken}\nTypeUid справочника: {ELMA.TypeUid}\nЛогин: {ELMA.login}\nПароль: {ELMA.password}\nАдрес: {Adress}\nПорт: {Port}\n-----------------------------------------------------------");
                 Task.Run(() => new ElmaMessages().Start());
-                //new ElmaMessages().Start();
 
                 StartTelegram();
 
@@ -547,6 +531,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             }
             else
             {
+                VisibleStartBtn = "Hidden";
                 Status = $"{DateTime.Now.ToString("g")} - {message}";
             }
 
@@ -555,7 +540,11 @@ namespace WpfElmaBot_2._0_.ViewModels
         private void Telegram_OnCommonError(string message, TelegramCore.TelegramEvents events)
         {
             AttachedPropertyAppendError = $"{DateTime.Now.ToString("G")}: {message} \n" + Environment.NewLine;
-            ColorError = "Visible";
+            if(IsDefaultError==false)
+            {
+                ColorError = "Visible";
+            }
+            
         }
 
         private void Telegram_OnCommonLog(string message, TelegramCore.TelegramEvents events)
@@ -606,7 +595,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             {
                 Loading = "Hidden";
                 MessageBox.Show("Что-то пошло не так. Попробуйте еще раз.");
-                MainWindowViewModel.Log.Error("Ошибка проверки настроек | " + ex);
+                Log.Error("Ошибка проверки настроек | " + ex);
 
             }
         }

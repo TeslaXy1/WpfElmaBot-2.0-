@@ -38,8 +38,6 @@ namespace WpfElmaBot.Service.Commands
         
         public async Task Start(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)//шаг старт
         {
-
-
             try
             {
                 string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
@@ -49,9 +47,9 @@ namespace WpfElmaBot.Service.Commands
 
                 var updateToken = await elma.UpdateTokenAndEntity<Auth>(Convert.ToInt64(update.Message.Chat.Id), botClient.GetCacheData(update.GetChatId()).Value.Login, botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
 
-                botClient.GetCacheData(update.GetChatId()).Value.AuthToken = updateToken.AuthToken;
-                botClient.GetCacheData(update.GetChatId()).Value.SessionToken = updateToken.SessionToken;
-                botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
+                botClient.GetCacheData(update.GetChatId()).Value.AuthToken          = updateToken.AuthToken;
+                botClient.GetCacheData(update.GetChatId()).Value.SessionToken       = updateToken.SessionToken;
+                botClient.GetCacheData(update.GetChatId()).Value.StatusAuth         = true;
 
                 OptionTelegramMessage message = new OptionTelegramMessage();
                 List<string> ids = new List<string>() { CommandRoute.Status, CommandRoute.MENU };
@@ -169,9 +167,9 @@ namespace WpfElmaBot.Service.Commands
                 elma.AuthorizationUser(authorization, Convert.ToInt64(update.Message.Chat.Id),loginpas.Value.Login);
 
                
-                botClient.GetCacheData(update.GetChatId()).Value.AuthToken = authorization.AuthToken;
-                botClient.GetCacheData(update.GetChatId()).Value.SessionToken = authorization.SessionToken;
-                botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
+                botClient.GetCacheData(update.GetChatId()).Value.AuthToken          = authorization.AuthToken;
+                botClient.GetCacheData(update.GetChatId()).Value.SessionToken       = authorization.SessionToken;
+                botClient.GetCacheData(update.GetChatId()).Value.StatusAuth         = true;
                 //botClient.RegisterNextStep(update.Message.Chat.Id, Menu);
 
                 OptionTelegramMessage message = new OptionTelegramMessage();
@@ -204,8 +202,6 @@ namespace WpfElmaBot.Service.Commands
         {
             try
             {
-
-
                 string msg = $"Получено '{update.Message.Text}' от чата {update.GetChatId()} ( " + update.Message.Chat.FirstName + "  " + update.Message.Chat.LastName + ")";
                 TelegramCore.getTelegramCore().InvokeCommonLog(msg, TelegramCore.TelegramEvents.Password);
                 botClient.ClearStepUser(update.Message.Chat.Id);
@@ -241,9 +237,9 @@ namespace WpfElmaBot.Service.Commands
            
                 var updateToken = await elma.UpdateTokenAndEntity<Auth>(Convert.ToInt64(update.Message.Chat.Id), botClient.GetCacheData(update.GetChatId()).Value.Login, botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
 
-                botClient.GetCacheData(update.GetChatId()).Value.AuthToken = updateToken.AuthToken;
-                botClient.GetCacheData(update.GetChatId()).Value.SessionToken = updateToken.SessionToken;
-                botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
+                botClient.GetCacheData(update.GetChatId()).Value.AuthToken          = updateToken.AuthToken;
+                botClient.GetCacheData(update.GetChatId()).Value.SessionToken       = updateToken.SessionToken;
+                botClient.GetCacheData(update.GetChatId()).Value.StatusAuth         = true;
 
 
 
@@ -252,21 +248,21 @@ namespace WpfElmaBot.Service.Commands
             }
             catch (Exception ex)
             {
-                OptionTelegramMessage message = new OptionTelegramMessage();
-                List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
-                message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
+                if (!ex.Message.Contains("Unexpected character"))
+                {
+                    OptionTelegramMessage message = new OptionTelegramMessage();
+                    List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
+                    message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
 
-                await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken, message);
+                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken, message);
 
-                MainWindowViewModel.Log.Error("Ошибка на шаге статуса | " + ex);
-
-
+                    MainWindowViewModel.Log.Error("Ошибка на шаге статуса | " + ex);
+                }
+                else
+                {
+                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Сервер перезапускается. Пожалуйста подождите", cancellationToken);
+                }
             }
-
-
         }
-       
-
-
     }
 }

@@ -24,18 +24,16 @@ namespace WpfElmaBot_2._0_.Service
         private static string sessionSprav;
         private static string priority = "";
         private static bool firstLaunch = true;
-      
-
-        private static CommandRoute route = new CommandRoute();
-        private static CancellationTokenSource _cancelTokenSource;
+        private const int waitDelay = 20;
         private const int timerIntervalInSeconds = 10;
-      
+
+        private static readonly CommandRoute route = new CommandRoute();
+        private static CancellationTokenSource _cancelTokenSource;
+            
         public ElmaMessages()
         {
             
         }
-
-
         public  void Start()
         {
             Stop();
@@ -74,23 +72,19 @@ namespace WpfElmaBot_2._0_.Service
         {
             try
             {
-                Random random = new Random();
                 bool Auth;              
-                int wait = 10 + random.Next(10);
+                
                 if(firstLaunch!=true)
                 {
-                     await Task.Delay(TimeSpan.FromSeconds(wait)); 
+                    await Task.Delay(TimeSpan.FromSeconds(waitDelay)); 
                 }              
                 try
                 {
-
-                        var authEntity = await AuthEntity(ELMA.login, Common.IsPass=="false"? $@"""{ELMA.password}""" : ELMA.password);
-                        authSprav = authEntity.AuthToken;
-                        sessionSprav = authEntity.SessionToken;
-                        Auth = true;
-                    
-                }
-              
+                    var authEntity = await AuthEntity(ELMA.login, Common.IsPass=="false"? $@"""{ELMA.password}""" : ELMA.password);
+                    authSprav = authEntity.AuthToken;
+                    sessionSprav = authEntity.SessionToken;
+                    Auth = true;                    
+                }              
                 catch(Exception exeption)
                 {
 
@@ -103,14 +97,13 @@ namespace WpfElmaBot_2._0_.Service
                     {
                         if(exeption.Message.Contains("Unexpected character"))
                         {
-                            //MessageBox.Show("Убедитесь, что сервер запущен");
                             TelegramCore.getTelegramCore().InvokeCommonError("Убедитесь, что сервер запущен", TelegramCore.TelegramEvents.Password);
-                            
+                            ReInitializationELMA();
+
+
                         }
                         else
                         {
-                            //MessageBox.Show("Неверный логин или пароль");
-                            
                             TelegramCore.getTelegramCore().InvokeCommonError("Неверный логин или пароль", TelegramCore.TelegramEvents.Password);
                       
                         }
@@ -118,56 +111,50 @@ namespace WpfElmaBot_2._0_.Service
                     }
                     MainWindowViewModel.Log.Error($"Ошибка авторизации спарвочника ||| {exeption.GetBaseException().ToString} ||| {exeption}");                 
                     Auth = false;
-                    
-
-                }
-                
+                }               
                 if (Auth == true)
                 {
                     var entity = await ELMA.getElma().GetEntity<EntityMargin>($"Entity/Query?type={ELMA.TypeUid}", authSprav, sessionSprav); //получение записей из справочника
                     for (int i = 0; i < entity.Count; i++)
-                    {              
+                    {
                         try
                         {
                             var chekToken = await ELMA.getElma().UpdateTokenAndEntity<Auth>(Convert.ToInt64(entity[i].IdTelegram), entity[i].Login, entity[i].AuthToken);
                             try
                             {
-                                 
-                                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.AuthToken     = chekToken.AuthToken;
-                                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.SessionToken  = chekToken.SessionToken;
-                                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.StatusAuth    = true;
 
+                                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.AuthToken = chekToken.AuthToken;
+                                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.SessionToken = chekToken.SessionToken;
+                                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity[i].IdTelegram)).Value.StatusAuth = true;
 
                                 var allMessages = await ELMA.getElma().GetAllMessage<MessegesOtvet>(chekToken.AuthToken, chekToken.SessionToken);
 
-                                //var unreadMessages = await ELMA.getElma().GetUnreadMessage<MessegesOtvet>(chekToken.AuthToken, chekToken.SessionToken);
-                                
-                                if(firstLaunch==true)
+                                if (firstLaunch == true)
                                 {
                                     await GenerateDictionary(entity[i], allMessages);
-                                    
+
                                 }
-                                
-                                FindLastMessage(entity[i], allMessages,  chekToken.AuthToken, chekToken.SessionToken, entity[i].TimeMessage);
-                              
-                                FindLastComment(allMessages, entity[i].Login, Convert.ToInt64(entity[i].IdTelegram));
+
+                                await FindLastMessage(entity[i], allMessages, chekToken.AuthToken, chekToken.SessionToken, entity[i].TimeMessage);
+                                await FindLastComment(allMessages, entity[i]);
                                 await GenerateDictionary(entity[i], allMessages);
-                            }                      
+                            }
                             catch (Exception exception)
                             {
                                 MainWindowViewModel.Log.Error($"Неудалось получить сообщения пользователя {entity[i].Login} | " + exception);
-                               // MessageBox.Show("" + exception);
-                            
 
                             }
 
 
                         }
-                        catch(System.Net.Http.HttpRequestException ex)
+                        catch (System.Net.Http.HttpRequestException ex)
                         {
-                           
-                            //var resp = new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
-                            //Console.WriteLine(resp);
+                            //var webEx = ex as WebException;
+                            //using (var stream = ex.Response.GetResponseStream())
+                            //using (var reader = new StreamReader(stream))
+                            //{
+                            //    Console.WriteLine(reader.ReadToEnd());
+                            //}
                         }
                         catch (Exception exception)
                         {
@@ -192,20 +179,22 @@ namespace WpfElmaBot_2._0_.Service
                                 }
 
                             }
-
-
-                                                         
+                            
                         }
                     }
                     firstLaunch = false;
                 }
-                
-                
+                               
             }
             catch (Exception exception)
             {
-
-                if(exception.StackTrace.Contains("ElmaMessages.cs:строка 124") || exception.StackTrace.Contains("ElmaMessages.cs:line 124"))
+                if (exception.Message.Contains("Unexpected character"))
+                {
+                    Stop();
+                    TelegramCore.getTelegramCore().InvokeCommonError("Убедитесь, что сервер запущен", TelegramCore.TelegramEvents.Password);
+                    ReInitializationELMA();
+                }
+                else if (exception.StackTrace.Contains("ElmaMessages.cs:строка 127") || exception.StackTrace.Contains("ElmaMessages.cs:line 127"))
                 {
                     TelegramCore.getTelegramCore().InvokeCommonError("Неверный TypeUid справочника", TelegramCore.TelegramEvents.Password);
                 
@@ -228,7 +217,7 @@ namespace WpfElmaBot_2._0_.Service
                 entity.AuthorizationUser = "false";
               
                 string jsonBody     = System.Text.Json.JsonSerializer.Serialize(entity);
-                var updateEntity    = await ELMA.getElma().PostRequestNotDeserialze<EntityMargin>($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
+                var updateEntity    = await ELMA.getElma().PostRequestNotDeserialze($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
             }
             catch(Exception ex)
             {
@@ -241,44 +230,34 @@ namespace WpfElmaBot_2._0_.Service
 
         private  async Task UpdateMessage(EntityMargin entity,DateTime time) //функция обновления последнего сообщения в справочнике
         {
-
             try
             {
-
                 entity.TimeMessage            = time;
 
                 string jsonBody               = System.Text.Json.JsonSerializer.Serialize(entity);
-                var updateEntity              = await ELMA.getElma().PostRequestNotDeserialze<EntityMargin>($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
+                var updateEntity              = await ELMA.getElma().PostRequestNotDeserialze($"Entity/Update/{ELMA.TypeUid}/{entity.Id}", jsonBody, authSprav, sessionSprav);
+                MainWindowViewModel.Log.Info($"Сообщение от {time} записано для {entity.Login}");
 
             }
             catch (Exception ex)
             {
                 MainWindowViewModel.Log.Error("Ошибка обновения последнего сообщения в справочнике | " + ex);
-
-            }
-            
-
+            }           
         }
-        private async Task GenerateDictionary(EntityMargin entity, MessegesOtvet message)
+        private Task GenerateDictionary(EntityMargin entity, MessegesOtvet message)
         {
             if (message != null)
-            {
-                
+            {               
                 for (int IdMes = message.Data.Count - 1; IdMes > -1; IdMes--)
                 {
-                    KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(TelegramCore.getTelegramCore().bot, Convert.ToInt64(entity.IdTelegram));
+                    KeyValuePair<long, UserCache> info = TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram));
                     if (message.Data[IdMes].LastComments.Count != 0)
-                    {
-                        int max = message.Data[IdMes].LastComments.Data.Select(x => x.Id).Max(); 
+                    {                      
                         try
                         {
-
-                            //if (info.Value.LastCommentId != null)
-                            //{
+                                int max = message.Data[IdMes].LastComments.Data.Select(x => x.Id).Max();
                                 if (!info.Value.LastCommentId.ContainsKey(message.Data[IdMes].Id))
-                                {
-                                    
-
+                                {                                   
                                    TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.LastCommentId.Add(message.Data[IdMes].Id, max);        
                                                                        
                                 }
@@ -286,17 +265,6 @@ namespace WpfElmaBot_2._0_.Service
                                 {
                                     TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.LastCommentId.Add(message.Data[IdMes].Id, 0);
                                 }
-                            //}
-                            //else
-                            //{
-                            //    if (!info.Value.LastCommentId.ContainsKey(message.Data[IdMes].Id))
-                            //    {
-
-                            //        TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.LastCommentId.Add(message.Data[IdMes].Id, 0);
-
-                            //    }
-
-                            //}
                         }
                         catch (Exception ex) 
                         {
@@ -310,14 +278,15 @@ namespace WpfElmaBot_2._0_.Service
                     {
                         if (!info.Value.LastCommentId.ContainsKey(message.Data[IdMes].Id))
                         {
-
                             TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.LastCommentId.Add(message.Data[IdMes].Id, 0);
-
                         }
                     }
                 }
             }
+
+            return Task.CompletedTask;
         }
+
         private async Task FindLastMessage(EntityMargin entity,MessegesOtvet messages,string authtoken,string sessiontoken, DateTime dateMes) //функцию генерации сообщения
         {
             try
@@ -327,8 +296,12 @@ namespace WpfElmaBot_2._0_.Service
                     for (int IdMes = messages.Data.Count - 1; IdMes > -1; IdMes--)
                     {                    
                         if (messages.Data[IdMes].CreationDate > dateMes && messages.Data[IdMes].IsRead == false)
-                        {                          
-
+                        {
+                            if(messages.Data[IdMes].LastComments.Count>0)
+                            {
+                                int max = messages.Data[IdMes].LastComments.Data.Select(x => x.Id).Max();
+                                TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.LastCommentId.Add(messages.Data[IdMes].Id, max);
+                            }
                             await SendMsg(messages.Data[IdMes],entity,authtoken,sessiontoken);
                             await UpdateMessage(entity, messages.Data[IdMes].CreationDate);
                             
@@ -372,7 +345,7 @@ namespace WpfElmaBot_2._0_.Service
 
                 }
 
-                string msg = (isAsk ? $"Новый вопрос к теме:\n{messages.Subject}" : isEvent ? "Новое событие" : (isTask ? $"{priority}Новая задача" : "Новое сообщение📋"));
+                string msg = (isAsk ? $"Новый вопрос к теме:\n{messages.Subject}" : isEvent ? "Новое событие" : (isTask ? $"{priority} Новая задача" : "Новое сообщение📋"));
                 msg += "\n";
                 msg += "👨‍💻 " + messages.CreationAuthor.Name;
                 msg += isAsk ? "" : (isTask ? (isNullDate ? "" : $"\n⏰ Сроки \n{taskbase[0].StartDate.Replace("/", ".")}-\n{taskbase[0].EndDate.Replace("/", ".")}") : "");
@@ -413,19 +386,18 @@ namespace WpfElmaBot_2._0_.Service
                    await route.MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: Convert.ToInt64(entity.IdTelegram), msg: msgLength? msg.Substring(i, Math.Min(4090, msg.Length - i)) : msg, TelegramCore.cancellation, messages.Url != null ? message : null);
                 }
 
-                MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Сообщение {messages.Id} отправлено пользователю {entity.Login}, предыдущее было отправлено {entity.TimeMessage}");
+                MainWindowViewModel.Log.Info($"Сообщение {messages.Id} отправлено пользователю {entity.Login}, предыдущее значение - {entity.TimeMessage}");
                
             }
             catch(Exception ex)
             {
-                //MessageBox.Show(ex + "");
                 MainWindowViewModel.Log.Error($"Ошибка отправки сообщения для {entity.Login}| " + ex);
             }
         }
         
-        private async Task FindLastComment(MessegesOtvet messages,string user,long idTelegram)
+        private async Task FindLastComment(MessegesOtvet messages, EntityMargin entity)
         {
-            KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(TelegramCore.getTelegramCore().bot, idTelegram);
+            KeyValuePair<long, UserCache> info = BotExtension.GetCacheData(TelegramCore.getTelegramCore().bot, Convert.ToInt64(entity.IdTelegram));
             if (messages != null)
             {
                 for (int IdMes = messages.Data.Count - 1; IdMes > -1; IdMes--)
@@ -437,20 +409,16 @@ namespace WpfElmaBot_2._0_.Service
                                 try   
                                 {
                                     if (info.Value.LastCommentId[messages.Data[IdMes].Id] != messages.Data[IdMes].LastComments.Data[IdComment].Id && info.Value.LastCommentId[messages.Data[IdMes].Id] < messages.Data[IdMes].LastComments.Data[IdComment].Id)
-                                    {
-                                        
-                                        TelegramCore.getTelegramCore().bot.GetCacheData(idTelegram).Value.LastCommentId[messages.Data[IdMes].Id] = messages.Data[IdMes].LastComments.Data[IdComment].Id;
-
-                                        await SendComment(messages.Data[IdMes],IdComment,user,idTelegram);
-
+                                    {                                       
+                                        TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.LastCommentId[messages.Data[IdMes].Id] = messages.Data[IdMes].LastComments.Data[IdComment].Id;
+                                        await SendComment(messages.Data[IdMes],IdComment, entity.Login, Convert.ToInt64(entity.IdTelegram));
                                     }
                                 }
                                 catch(Exception ex)
                                 {
-                                    TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(idTelegram)).Value.LastCommentId.Add(messages.Data[IdMes].Id, 0);
+                                    TelegramCore.getTelegramCore().bot.GetCacheData(Convert.ToInt64(entity.IdTelegram)).Value.LastCommentId.Add(messages.Data[IdMes].Id, 0);
                                     IdComment = IdComment - 1;
-                                    //TelegramCore.getTelegramCore().InvokeCommonError($"Ошибка генерации комментария для {user}", TelegramCore.TelegramEvents.Password);
-                                    MainWindowViewModel.Log.Error($"Ошибка генерации  комментария для {user}| " + ex) ;
+                                    MainWindowViewModel.Log.Error($"Ошибка генерации  комментария для {entity.Login}| " + ex) ;
                                    
                                 }
                             }
@@ -464,8 +432,6 @@ namespace WpfElmaBot_2._0_.Service
         {
             try
             {
-
-
                 string msg = "Новый комментарий к теме:\n📃 " + messages.Subject; // messages.Data[IdMes].Subject
                 msg += "\n👨‍💻 " + messages.CreationAuthor.Name;
                 msg += messages.LastComments.Data[IdComment].ActionText != "" ? $"\n📍 {messages.LastComments.Data[IdComment].ActionText}" : "";
@@ -493,7 +459,7 @@ namespace WpfElmaBot_2._0_.Service
                 message.MenuInlineKeyboardMarkup = MenuGenerator.UnitInlineKeyboard(ikm);
 
                 await route.MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: idTelegram, msg: msg, TelegramCore.cancellation, messages.Url != null ? message : null);
-                MainWindowViewModel.Log.Info($"{DateTime.Now.ToString("g")} - Комментарий {messages.LastComments.Data[IdComment].Id} отправлен пользователю {user}");
+                MainWindowViewModel.Log.Info($"Комментарий {messages.LastComments.Data[IdComment].Id} к соообщению {messages.Id} отправлен пользователю {user}");
 
             }
             catch(Exception ex)
@@ -507,9 +473,30 @@ namespace WpfElmaBot_2._0_.Service
 
         public async Task<Auth> AuthEntity(string login,string password) //функция авторизации справочника
         {
-            var authEntity = await ELMA.getElma().PostRequestNotDeserialze<Auth>($"Authorization/LoginWith?username={login}", password);
+            
+            var authEntity = await ELMA.getElma().PostRequestNotDeserialze($"Authorization/LoginWith?username={login}", password);
             var tokens = JsonConvert.DeserializeObject<Auth>(authEntity.Trim(new char[] { '\uFEFF' }));
             return tokens;
+        }
+
+        public async Task ReInitializationELMA()
+        {
+            try
+            {
+                var result = await AuthEntity(ELMA.login, Common.IsPass == "false" ? $@"""{ELMA.password}""" : ELMA.password);
+                TelegramCore.getTelegramCore().InvokeCommonError($"Подключение установлено", TelegramCore.TelegramEvents.Password);
+                Start();
+            }            
+            catch
+            {
+                int delay = 60 * 5000;
+                TelegramCore.getTelegramCore().InvokeCommonError($"Попытка переподключения к серверу через {delay / 60000} минут", TelegramCore.TelegramEvents.Password);
+                await Task.Delay(60*5000);
+                await ReInitializationELMA();
+                return;
+            }
+            
+
         }
 
     }
