@@ -2,7 +2,10 @@
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,34 +14,32 @@ using Telegram.Bot.Types;
 using WpfElmaBot.Models;
 using WpfElmaBot.Service.Commands;
 using WpfElmaBot_2._0_;
+using WpfElmaBot_2._0_.Models;
 using WpfElmaBot_2._0_.Models.EntityPack;
 using WpfElmaBot_2._0_.Service.Commands;
 using WpfElmaBot_2._0_.ViewModels;
+using static System.Net.WebRequestMethods;
 
 namespace WpfElmaBot.Service
 {
     public class ELMA
     {
-        private static RestClient RestClient { get; set; }
-        private static RestResponse RestResponse { get; set; }
+        public static RestClient RestClient { get; set; }
+
         private static ELMA elma;
-        public static string FullURL { get; set; } = "http://127.0.0.1:8000/API/REST/";
-        public static string FullURLpublic { get; set; } = "http://127.0.0.1:8000/PublicAPI/REST/";
-        public static string appToken { get; set; } = "9891B3599F09558A964CFF5614E9DECF9F982EDCEDD1544F8AB4344C13F3AFEC59EEF65C03EE3C63BE113EB29C4B4E29E2CDDDF2048586F3E85417B8673AE817";
-        public static string TypeUid { get; set; } = "c5c12f67-3f57-45c2-aa70-02dfded87f77";
+        public static string FullURL { get; set; }
+        public static string FullURLpublic { get; set; } 
+        public static string appToken { get; set; } 
+        public static string TypeUid { get; set; } 
         public static string login { get; set; } 
         public static string password { get; set; }
 
-        public static string TypeUidTaskBase = "f532ef81-20e1-467d-89a4-940c57a609bc";
-
-
+        public static string TypeUidTaskBase;
 
         private ELMA()
-        {
+        {           
             RestClient = new RestClient();
-            RestResponse = new RestResponse();
-        }
-
+        }  
         
         public static ELMA getElma()
         {
@@ -47,7 +48,6 @@ namespace WpfElmaBot.Service
             return elma;
         }
 
-
         public async Task<Auth> UpdateToken<Auth>(string authtoken)
         {
             var data = await GetRequest<Auth>($"{FullURL}Authorization/CheckToken?token={authtoken}");
@@ -55,22 +55,43 @@ namespace WpfElmaBot.Service
             
         }
         private async Task<T> GetRequest<T>(string path, string authToken = null, string sessionToken =null)
-        {
-            var request = new RestRequest(path);
+        {                          
+            var request = new RestRequest(path);               
             AddHeadersELMA(request, authToken, sessionToken);
-            var test = RestClient.BuildUri(request);
-            var response = await RestClient.GetAsync(request);
-            return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
-        }
-
+            var test = RestClient.BuildUri(request);           
+            var response = await RestClient.ExecuteGetAsync(request);
+            if (response.ErrorException != null || response.Content.Contains("Запуск сервера"))
+            {
+                if (response.Content != null)
+                {
+                    throw new WebException(response.Content);
+                }
+                else
+                {
+                    throw new WebException(response.ErrorMessage);
+                }
+            }
+            return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));         
+        }     
         public async Task<T> PostRequest<T>(string path, string body, string authToken = null , string sessionToken = null )
         {
-                var request = new RestRequest($"{FullURL}" + path);
-                AddHeadersELMA(request, authToken, sessionToken);
-                request.AddStringBody(body, DataFormat.Json);
-                var test = RestClient.BuildUri(request);
-                var response = await RestClient.PostAsync(request);
-                return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
+            var request = new RestRequest($"{FullURL}" + path);
+            AddHeadersELMA(request, authToken, sessionToken);
+            request.AddStringBody(body, DataFormat.Json);
+            var test = RestClient.BuildUri(request);
+            var response = await RestClient.ExecutePostAsync(request);
+            if (response.ErrorException != null || response.Content.Contains("Запуск сервера"))
+            {
+                if (response.Content != null)
+                {
+                    throw new WebException(response.Content);
+                }
+                else
+                {
+                    throw new WebException(response.ErrorMessage);
+                }
+            }
+            return JsonConvert.DeserializeObject<T>(response.Content.Trim(new char[] { '\uFEFF' }));
             
         }
 
@@ -80,17 +101,40 @@ namespace WpfElmaBot.Service
             AddHeadersELMA(request, authToken, sessionToken);
             request.AddStringBody(body, DataFormat.Json);
             var test = RestClient.BuildUri(request);
-            var response = await RestClient.PostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request);
+            if (response.ErrorException != null || response.Content.Contains("Запуск сервера"))
+            {
+                if(response.Content!=null)
+                {
+                    throw new WebException(response.Content);
+                }
+                else
+                {
+                    throw new WebException(response.ErrorMessage);
+                }
+               
+            }
             return response.Content;
         }
 
         public async Task<List<T>> GetEntity<T>(string path, string authToken , string sessionToken ) where T : Entity
         {  
-                var request = new RestRequest($"{FullURL}" + path);
-                AddHeadersELMA(request, authToken, sessionToken);
-                var test = RestClient.BuildUri(request);
-                var response = await RestClient.GetAsync(request);
-                return JsonConvert.DeserializeObject<List<T>>(response.Content.Trim(new char[] { '\uFEFF' }));                      
+            var request = new RestRequest($"{FullURL}" + path);
+            AddHeadersELMA(request, authToken, sessionToken);
+            var test = RestClient.BuildUri(request);
+            var response = await RestClient.ExecuteGetAsync(request);
+            if (response.ErrorException != null)
+            {
+                if (response.Content != null)
+                {
+                    throw new WebException(response.Content);
+                }
+                else
+                {
+                    throw new WebException(response.ErrorMessage);
+                }
+            }
+            return JsonConvert.DeserializeObject<List<T>>(response.Content.Trim(new char[] { '\uFEFF' }));                      
         }
         public async Task<T> GetEntityById<T>(string typeUId, long entityId, string authToken, string sessionToken ) where T : Entity
         {
@@ -111,13 +155,13 @@ namespace WpfElmaBot.Service
 
 
         }
-        public  Task<T> GetAllMessage<T>(string authtoken, string sessionToken) where T : MessegesOtvet
+        public  async Task<T> GetAllMessage<T>(string authtoken, string sessionToken) where T : MessegesOtvet
         {
 
             string AFTER = "";
             string BEFORE = "";
             var LIMIT = "100000";
-            var obj =  GetRequest<T>($"{FullURLpublic}EleWise.ELMA.Messages/MessageFeed/Posts/Feed?after={AFTER}&before={BEFORE}&limit={LIMIT}", authtoken, sessionToken);
+            var obj = await GetRequest<T>($"{FullURLpublic}EleWise.ELMA.Messages/MessageFeed/Posts/Feed?after={AFTER}&before={BEFORE}&limit={LIMIT}", authtoken, sessionToken);
             return obj;
 
 

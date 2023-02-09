@@ -415,6 +415,7 @@ namespace WpfElmaBot_2._0_.ViewModels
             }
             catch(Exception ex)
             {
+
                 MainWindowViewModel.Log.Error("Ошибка проверки справочника | " + ex);
                 return false;
             }

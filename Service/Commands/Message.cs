@@ -72,6 +72,7 @@ namespace WpfElmaBot.Service.Commands
             catch (Exception ex)
             {
                 MainWindowViewModel.Log.Error("Ошибка отправки сообщений в телеграм | " + ex);
+                throw new Exception(ex.Message);
             }
 
         }
