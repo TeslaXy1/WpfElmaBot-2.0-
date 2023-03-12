@@ -105,7 +105,8 @@ namespace WpfElmaBot.Service
         public string SessionToken { get; set; }
 
         public bool StatusAuth  { get; set; }
+        public int CountAttempt { get; set; }
 
-        public Dictionary<long, long> LastCommentId { get; set; } = new();
+        public Dictionary<long, DateTime> LastCommentId { get; set; } = new();
     }
 }

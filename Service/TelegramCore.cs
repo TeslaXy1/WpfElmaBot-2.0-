@@ -157,15 +157,15 @@ namespace WpfElmaBot.Service
 
             }
 
-            if(ErrorMessage.Contains("502"))
+            if(ErrorMessage.Contains("502 Bad Gateway"))
             {
 
-                getTelegramCore().InvokeCommonError(ErrorMessage, TelegramCore.TelegramEvents.Status);
-                System.Threading.Thread.Sleep(1);
+                getTelegramCore().InvokeCommonError("проверьте подключение к интернету", TelegramCore.TelegramEvents.Status);
+                
             }
             MainWindowViewModel.Log.Error("Ошибка телеграм | " + ErrorMessage);
 
-
+            System.Threading.Thread.Sleep(1000);
         }
         public async Task ClearUpdates()
         {

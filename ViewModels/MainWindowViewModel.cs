@@ -524,7 +524,7 @@ namespace WpfElmaBot_2._0_.ViewModels
 
         private void Telegram_OnCommonStatus(string message, TelegramCore.TelegramEvents events)
         {
-            if (message == "Обработка сообщений остановлена")
+            if (message == "Обработка сообщений остановлена" || message.ToLower().Contains("бот остановлен"))
             {
                 VisibleStartBtn = "Visible";
                 Status = $"{DateTime.Now.ToString("g")} - {message}";
