@@ -44,6 +44,8 @@ namespace WpfElmaBot.Service.Commands
 
                 var updateToken = await elma.UpdateTokenAndEntity<Auth>(Convert.ToInt64(update.Message.Chat.Id), botClient.GetCacheData(update.GetChatId()).Value.Login, botClient.GetCacheData(update.GetChatId()).Value.AuthToken);
 
+
+                botClient.GetCacheData(update.GetChatId()).Value.CountAttempt = 0;
                 botClient.GetCacheData(update.GetChatId()).Value.AuthToken = updateToken.AuthToken;
                 botClient.GetCacheData(update.GetChatId()).Value.SessionToken = updateToken.SessionToken;
                 botClient.GetCacheData(update.GetChatId()).Value.StatusAuth = true;
@@ -61,7 +63,19 @@ namespace WpfElmaBot.Service.Commands
             {
                 if(exception.Message.Contains("Запуск сервера") || exception.Message.Contains("Подключение не установлено") || exception.Message.Contains("Fault xmlns"))
                 {
-                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Сервер недоступен. Пожалуйста подождите", cancellationToken);
+                    if(botClient.GetCacheData(update.GetChatId()).Value.AuthToken!=null)
+                    {
+                        await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Сервер недоступен. Пожалуйста подождите", cancellationToken);
+
+                    }
+                    else
+                    {
+                        OptionTelegramMessage message = new();
+                        List<string> ids = new() { CommandRoute.AUTHMENU };
+                        message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
+
+                        await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken, message);
+                    }
 
                 }
                 else
@@ -204,17 +218,22 @@ namespace WpfElmaBot.Service.Commands
                 }
                 else
                 {
-                    var ex = JsonConvert.DeserializeObject<ErrorResponse>(exception.Message);
-                    if (ex.Message.Contains("Ошибка авторизации"))
+                    OptionTelegramMessage message = new();
+                    List<string> ids = new() { CommandRoute.AUTHMENU, CommandRoute.MENU };
+                    message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                    if (exception.Message.Contains("Ошибка авторизации"))
                     {
-                        OptionTelegramMessage message = new();
-                        List<string> ids = new() { CommandRoute.AUTHMENU, CommandRoute.MENU };
-                        message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(2, ids, "");
+                        
                         await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Неверный логин или пароль", cancellationToken, message);
                     }
                     else
                     {
-                        MainWindowViewModel.Log.Error("Ошибка на шаге авторизации | " + ex);
+                        if (exception.Message.ToLower().Contains("токен недействителен"))
+                        {
+                            await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Попробуйте еще раз(", cancellationToken, message);
+                        }
+                         
+                        MainWindowViewModel.Log.Error($"Ошибка на шаге авторизации  | " + exception.Message);
 
                     }
                 }
@@ -281,13 +300,28 @@ namespace WpfElmaBot.Service.Commands
             {
                 if (exception.Message.Contains("Запуск сервера") || exception.Message.Contains("Подключение не установлено") || exception.Message.Contains("Fault xmlns"))
                 {
-                    await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Сервер недоступен. Пожалуйста подождите", cancellationToken);
+                    if (exception.Message.Contains("Нераспознанный формат идентификатора"))
+                    {
+                        await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Нераспознанный формат идентификатора.", cancellationToken);
+                        OptionTelegramMessage message = new();
+                        List<string> ids = new() { CommandRoute.AUTHMENU };
+                        message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
+
+                        await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken, message);
+
+                    }
+                    else
+                    {
+
+
+                        await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Сервер недоступен. Пожалуйста подождите", cancellationToken);
+                    }
 
                 }
                 else
                 {
-                    var ex = JsonConvert.DeserializeObject<ErrorResponse>(exception.Message);
-                    if (ex.Message.Contains("Токен недействителен"))
+                   
+                    if (exception.Message.Contains("Токен недействителен"))
                     {
                         OptionTelegramMessage message = new();
                         List<string> ids = new() { CommandRoute.AUTHMENU };
@@ -295,8 +329,9 @@ namespace WpfElmaBot.Service.Commands
 
                         await route.MessageCommand.Send(botClient, update.Message.Chat.Id, $"Вам нужно авторизоваться", cancellationToken, message);
 
-                        MainWindowViewModel.Log.Error("Ошибка на шаге статуса | " + ex.Message);
+                        
                     }
+                    MainWindowViewModel.Log.Error("Ошибка на шаге статуса | " + exception.Message);
                 }
             }
         }

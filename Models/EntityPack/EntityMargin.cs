@@ -13,10 +13,9 @@ namespace WpfElmaBot_2._0_.Models.EntityPack
         public string IdUserElma { get; set; }
         public string AuthToken { get; set; }
         public string SessionToken { get; set; }
-        public string IdLastSms { get; set; }
         public string AuthorizationUser { get; set; }
         public string Login { get; set; }
-
+        public bool Success { get; set; }
         public DateTime TimeMessage { get; set; }
     }
 }

@@ -436,6 +436,7 @@ namespace WpfElmaBot_2._0_.ViewModels
         {
             try
             {
+          
                 WindowState = WindowState.Normal;
                 IsDefaultMain = true;
                 VisibleSettings = "Hidden";

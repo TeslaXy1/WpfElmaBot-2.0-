@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using WpfElmaBot.Models;
 using WpfElmaBot.Service.Commands;
 using WpfElmaBot_2._0_.Models.EntityPack;
+using WpfElmaBot_2._0_.Service;
 using WpfElmaBot_2._0_.Service.Commands;
 using WpfElmaBot_2._0_.ViewModels;
 
@@ -185,7 +186,7 @@ namespace WpfElmaBot.Service
             var filter = "";
             try
             {
-                var entity = await GetEntity<EntityMargin>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", authorization.AuthToken, authorization.SessionToken);
+                var entity = await GetEntity<EntityMargin>($"Entity/Query?type={TypeUid}&q={eqlQuery}&limit={limit}&offset={offset}&sort={sort}&filterProviderUid={filterProviderUid}&filterProviderData={filterProviderData}&filter={filter}", ElmaMessages.authSprav, ElmaMessages.sessionSprav);
 
                 //MainWindowViewModel.Log.Error("Получение записей-" + authorization.AuthToken + " NewСессия-" + authorization.SessionToken+ " EntityТокен-" + entity[0].AuthToken + " EntityСессия-" + entity[0].SessionToken);
 
@@ -199,6 +200,7 @@ namespace WpfElmaBot.Service
                         AuthToken = authorization.AuthToken,
                         SessionToken = authorization.SessionToken,
                         AuthorizationUser = "true",
+                        Success = true,
                         Login = login,
                         TimeMessage = DateTime.UtcNow
                     };
@@ -210,7 +212,7 @@ namespace WpfElmaBot.Service
                     if (entity[0].IdTelegram != Convert.ToString(chatid))
                     {
                         OptionTelegramMessage message = new OptionTelegramMessage();
-                        List<string> ids = new List<string>() { CommandRoute.AUTHMENU };
+                        List<string> ids = new List<string>() { CommandRoute.AUTHMENU,CommandRoute.MENU };
                         message.MenuReplyKeyboardMarkup = MenuGenerator.ReplyKeyboard(1, ids, "");
 
                         await new CommandRoute().MessageCommand.Send(TelegramCore.getTelegramCore().bot, chatId: Convert.ToInt64(entity[0].IdTelegram), msg: "Выполенен вход с другого аккаунта телеграм", TelegramCore.cancellation, message);
@@ -225,13 +227,14 @@ namespace WpfElmaBot.Service
                     entity[0].SessionToken = authorization.SessionToken;
                     entity[0].IdTelegram = Convert.ToString(chatid);
                     entity[0].AuthorizationUser = "true";
+                    entity[0].Success = true;
                     jsonBody = System.Text.Json.JsonSerializer.Serialize(entity[0]);
 
                 }
 
                // MainWindowViewModel.Log.Error("Попытка записать -" + authorization.AuthToken + " NewСессия-" + authorization.SessionToken + " EntityТокен-" + entity[0].AuthToken + " EntityСессия-" + entity[0].SessionToken);
 
-                var entityPost = await PostRequestNotDeserialze(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}" : $"Entity/Insert/{TypeUid}", jsonBody, authorization.AuthToken, authorization.SessionToken);
+                var entityPost = await PostRequestNotDeserialze(entity.Count > 0 ? $"Entity/Update/{ELMA.TypeUid}/{entity[0].Id}" : $"Entity/Insert/{TypeUid}", jsonBody, ElmaMessages.authSprav, ElmaMessages.sessionSprav);
 
 
 
